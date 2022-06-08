@@ -13,7 +13,7 @@ class Pokemon:
 
 Make some objects, put them in the HashIndex:
 ```
-from matchindex import MatchIndex, get_attributes
+from hashindex import MatchIndex, get_attributes
 
 zapdos = Pokemon('Zapdos', 'Electric', 'Flying')
 pikachu_1 = Pokemon('Pikachu', 'Electric', None)

@@ -57,3 +57,12 @@ def test_update():
     objs = ri.find([('x', '<', 2)])
     assert objs == [t]
 
+
+def test_find_equal():
+    ri = RangeIndex({'x': int, 'y': float, 'desc': str})
+    t = make_thing()
+    ri.add(t)
+    int_result = ri.find([('x', '==', t.x)])
+    float_result = ri.find([('y', '==', t.y)])
+    str_result = ri.find([('desc', '==', t.desc)])
+    assert [t] == int_result == float_result == str_result

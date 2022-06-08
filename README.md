@@ -27,7 +27,7 @@ ri.find([('shape', '==', 'circle'), ('size', '<', 3)])
 
 ### Limitations
 
- * Indexed fields must be of type `float`, `int`, or `str`.
- * If you only need exact-value lookups, [HashIndex](github.com/manimino/hashindex) is faster.
+ * Indexed fields must be type `float`, `int`, or `str`.
+ * If you only need exact-value lookups, [HashIndex](https://github.com/manimino/hashindex/) is faster.
  * Not an entire DB, just the part you probably need.
  * Not thread-safe.
