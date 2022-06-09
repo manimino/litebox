@@ -8,13 +8,6 @@ Find Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
  
 `pip install rangeindex`
 
-### Performance 
-
- * RangeIndex `find()` is often 100x to 1000x faster than linear search.
- * Uses ~100 bytes of RAM per object indexed, so 1 million objects takes ~100MB.
-
-[Performance details](perf/perf.md)
-
 ### Example
 
 Make a million objects:
@@ -52,3 +45,10 @@ for f in found:
  * If you only need exact-value lookups, consider [HashIndex](https://github.com/manimino/hashindex/) instead.
  * Not thread-safe.
  * Not an entire DB, just the part you probably need.
+
+### Performance 
+
+ * RangeIndex `find()` is often 100x to 1000x faster than linear search.
+ * Uses ~100 bytes of RAM per object indexed, so 1 million objects takes ~100MB.
+
+[Performance details](perf/perf.md)
