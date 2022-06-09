@@ -28,6 +28,11 @@ class RangeIndex:
         self.conn = sqlite3.connect(':memory:')
         self.fields = fields
 
+        # TODO: store a sorted (list? deque? skiplist?) of tuples of (key, obj)
+        # when there are many object keys found, it will be faster to
+        # linear scan over all our objects and match keys
+        # than it is to do a million dict lookups.
+
         # create sqlite table
         tbl = [f'CREATE TABLE {self.table_name} (']
         for field, pytype in fields.items():
