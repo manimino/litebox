@@ -12,8 +12,8 @@ Find circle-shaped objects that have size < 3.
 from rangeindex import RangeIndex
 
 ri = RangeIndex({'size': float, 'shape': str})
-for obj in my_objects:
-    ri.add(obj)
+ri.add(object)
+ri.add_many(list_of_objects)
 ri.find([('shape', '==', 'circle'), ('size', '<', 3)])
 ```
 
@@ -31,3 +31,12 @@ ri.find([('shape', '==', 'circle'), ('size', '<', 3)])
  * If you only need exact-value lookups, [HashIndex](https://github.com/manimino/hashindex/) is faster.
  * Not an entire DB, just the part you probably need.
  * Not thread-safe.
+
+### Typical performance
+
+ * Add an object: a few microseconds
+ * Add a million objects: a few seconds
+ * Find 100 matching objects in a set of 1 million: 0.1 milliseconds (~100x faster than linear search).
+ * However, finds that return all / most of your objects will be slower than linear search. 
+ * RAM usage will depend on how many indices you have. For `float` and `int` indices, 
+   it's about 50 bytes per object per index. So 10M objects * 2 indices * 50 bytes = 1GB.

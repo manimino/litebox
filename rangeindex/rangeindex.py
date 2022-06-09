@@ -1,6 +1,7 @@
 import sqlite3
 from collections.abc import Iterable
 from typing import List, Tuple, Dict, Any, Optional
+import ctypes
 
 PYTYPE_TO_SQLITE = {
     int: 'INTEGER',
@@ -44,14 +45,32 @@ class RangeIndex:
             cur.execute(idx)
 
     def add(self, obj: Any):
-        ptr = id(obj)
-        self.objs[ptr] = obj
+        # TODO make this a constant
         col_str = ','.join(self.fields.keys()) + f',{PYOBJ_COL}'
         value_str = ','.join(['?']*(len(self.fields)+1))
         q = f'INSERT INTO {self.table_name} ({col_str}) VALUES({value_str})'
+
+        ptr = id(obj)
+        self.objs[ptr] = obj
         values = [obj.__dict__.get(c, None) for c in self.fields] + [ptr]
         cur = self.conn.cursor()
         cur.execute(q, values)
+        self.conn.commit()
+
+    def add_many(self, objs: List[any]):
+        value_str = ','.join(['?'] * (len(self.fields) + 1))
+        col_str = ','.join(self.fields.keys()) + f',{PYOBJ_COL}'
+        q = f'INSERT INTO {self.table_name} ({col_str}) VALUES ({value_str})'
+
+        rows = []
+        for obj in objs:
+            ptr = id(obj)
+            self.objs[ptr] = obj
+            values =  [obj.__dict__.get(c, None) for c in self.fields] + [ptr]
+            rows.append(values)
+
+        cur = self.conn.cursor()
+        cur.executemany(q, rows)
         self.conn.commit()
 
     def remove(self, obj: Any):
@@ -81,9 +100,9 @@ class RangeIndex:
     def find(self, query: Optional[List[Tuple]] = None) -> List[Any]:
         if not query:
             return list(self.objs.values())
-        return [self.objs[ptr] for ptr in self.find_obj_ids(query)]
+        return list(self.objs[ptr] for ptr in self.find_obj_ids(query))
 
-    def find_obj_ids(self, query: Optional[List[Tuple]] = None) -> Tuple:
+    def find_obj_ids(self, query: Optional[List[Tuple]] = None) -> List:
         """Find Python object ids that match the query constraints."""
         self._validate_query(query)
         if not query:
@@ -99,7 +118,7 @@ class RangeIndex:
                 q.append(f'{field} {op} ?')
         cur = self.conn.cursor()
         rows = cur.execute('\n'.join(q), values)
-        return tuple(r[0] for r in rows.fetchall())
+        return list(r[0] for r in rows.fetchall())
 
     def _validate_fields(self, fields):
         if not fields or not isinstance(fields, dict):
@@ -108,7 +127,7 @@ class RangeIndex:
             if fields[f] not in [int, float, str]:
                 raise TypeError('Expected int, float, or str field type at position {}, but got {}'.format(i, fields[f]))
             if not isinstance(f, str):
-                raise TypeError('Field name must be a str, got {} at position {}'.format(field, i))
+                raise TypeError('Field name must be a str, got {} at position {}'.format(f, i))
 
     def _validate_query(self, query: Optional[List[Tuple]]):
         if query is None:
@@ -124,14 +143,21 @@ class RangeIndex:
                 raise QueryMalformedError("Error in query element {}: expected a tuple of length 3, but got {}".format(
                     i, triplet))
             field, op, value = triplet
-            # TODO: test all operators https://www.techonthenet.com/sqlite/comparison_operators.php
-            if op not in ['<', '>', '==', '=', '!=', '>=', '<=']:
-                raise QueryBadOperatorError("Error in query element {}: {} is not a valid operator".format(i, op))
+            if op.upper() not in ['<', '>', '==', '=', '!=', '>=', '<=', 'IS', 'IS NOT']:
+                raise QueryBadOperatorError("Error in query at {}: {} is not a valid operator".format(triplet, op))
             if field not in self.fields:
-                raise QueryUnknownFieldError("Error in query element {}: {} is not an indexed field".format(i, field))
-            if not isinstance(value, self.fields.get(field)) and value is not None:
-                raise QueryTypeError("Error in query element {}: expected type {} but got {}".format(
-                    i, self.fields[field], type(value)))
+                raise QueryUnknownFieldError("Error in query at {}: {} is not an indexed field".format(
+                    triplet, field))
+            if value is not None:
+                if self.fields[field] in [int, float] and type(value) not in [int, float]:
+                    raise QueryTypeError("Error in query {}: expected type  but got {}".format(
+                        triplet, self.fields[field], type(value)))
+                elif self.fields[field] == str and type(value) != str:
+                    raise QueryTypeError("Error in query {}: expected type  but got {}".format(
+                        triplet, self.fields[field], type(value)))
+            if value is None and op.upper() not in ['IS', 'IS NOT']:
+                raise QueryBadNullComparator("Error in query at {}: Use 'IS' or 'IS NOT' as the operator "
+                                             "when comparing to None values.".format(triplet))
 
 
 class InvalidFields(Exception):
@@ -151,4 +177,8 @@ class QueryTypeError(Exception):
 
 
 class QueryUnknownFieldError(Exception):
+    pass
+
+
+class QueryBadNullComparator(Exception):
     pass

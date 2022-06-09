@@ -65,4 +65,25 @@ def test_find_equal():
     int_result = ri.find([('x', '==', t.x)])
     float_result = ri.find([('y', '==', t.y)])
     str_result = ri.find([('desc', '==', t.desc)])
-    assert [t] == int_result == float_result == str_result
+    assert [t] == int_result
+    assert [t] == float_result
+    assert [t] == str_result
+
+
+def test_find_null():
+    ri = RangeIndex({'x': int, 'y': float, 'desc': str})
+    t = Thing(x=None, y=None, desc=None)
+    ri.add(t)
+    int_result = ri.find([('x', 'is', t.x)])
+    float_result = ri.find([('y', 'is', t.y)])
+    str_result = ri.find([('desc', 'is', t.desc)])
+    assert [t] == int_result
+    assert [t] == float_result
+    assert [t] == str_result
+
+def test_add_many():
+    ten_things = [make_thing() for _ in range(10)]
+    ri = RangeIndex({'x': int, 'y': float, 'desc': str})
+    ri.add_many(ten_things)
+    found = ri.find()
+    assert len(found) == len(ten_things)
