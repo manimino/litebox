@@ -42,7 +42,7 @@ for f in found:
 ### Performance 
 
  * RangeIndex `find()` is often 100x to 1000x faster than linear search.
- * Uses ~100 bytes of RAM per object indexed, so 1 million objects takes ~100MB.
+ * Uses ~100 bytes of RAM per object indexed, so indexing 1 million objects takes ~100MB.
 
 [Performance details](perf/perf.md)
 
@@ -51,4 +51,5 @@ for f in found:
  * Indexed fields must be type `float`, `int`, or `str`.
  * If you only need exact-value lookups, consider [HashIndex](https://github.com/manimino/hashindex/) instead.
  * Not thread-safe.
+ * No persistence. This is for in-memory objects only.
  * Not an entire DB, just the part you probably need.
