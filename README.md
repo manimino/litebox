@@ -1,6 +1,6 @@
 # RangeIndex
 
-Find Python objects by their attributes.
+Find Python objects by comparing their attributes.
 
 `pip install rangeindex`
 
@@ -20,7 +20,7 @@ objects = [Object() for _ in range(10**6)]
 
 Index them:
 ```
-from rangeindex.rangeindex import RangeIndex
+from rangeindex import RangeIndex
 
 ri = RangeIndex({'size': float, 'shape': str})
 ri.add_many(objects)
