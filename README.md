@@ -7,8 +7,8 @@ Data structure for looking up Python objects by `<`, `<=`, `==`, `>=`, `>` on th
 ### Features
 
  * RangeIndex lookup is typically 100x to 1000x faster than looping over all your objects.
- * Adding a million objects to the index takes a few seconds and about 100MB of RAM.
  * Supports `class`, `dataclass`, and `namedtuple` objects.
+ * Indexing a million objects takes about 100MB of RAM.
  * Needs Python 3.6+. No other dependencies.
 
 [See docs for more details.](https://pypi.org/project/rangeindex/)
