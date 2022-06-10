@@ -81,6 +81,7 @@ def test_find_null():
     assert [t] == float_result
     assert [t] == str_result
 
+
 def test_add_many():
     ten_things = [make_thing() for _ in range(10)]
     ri = RangeIndex({'x': int, 'y': float, 'desc': str})

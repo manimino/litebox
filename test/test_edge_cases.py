@@ -28,3 +28,16 @@ def test_index_namedtuple():
     ri.add(pt)
     ls = ri.find([('x', '<=', 1)])
     assert ls == [pt]
+
+
+def test_multiple_rangeindex_instances():
+    t1 = Thing()
+    ri1 = RangeIndex({'x': int})
+    ri1.add(t1)
+
+    t2 = Thing()
+    ri2 = RangeIndex({'x': int})
+    ri2.add(t2)
+
+    assert ri1.find([('x', '<=', 1)]) == [t1]
+    assert ri2.find([('x', '<=', 1)]) == [t2]

@@ -4,9 +4,11 @@ Data structure for looking up Python objects by `<`, `<=`, `==`, `>=`, `>` on th
 
 `pip install rangeindex`
 
- * Lookup is typically 100x to 1000x faster than linear search.
- * Uses an in-memory SQLite. Better than any pure-python index.
- * Uses about 100MB RAM per million objects indexed.
+### Features
+
+ * RangeIndex lookup is typically 100x to 1000x faster than looping over all your objects.
+ * Adding a million objects to the index takes a few seconds and about 100MB of RAM.
+ * Supports `class`, `dataclass`, and `namedtuple` objects.
  * Needs Python 3.6+. No other dependencies.
 
 [See docs for more details.](https://pypi.org/project/rangeindex/)
@@ -33,9 +35,9 @@ ri = RangeIndex({'size': float, 'shape': str})
 ri.add_many(objects)
 ```
 
-Find objects that have `size < 0.01` and `shape == circle`: 
+Find objects that have `size < 0.001` and `shape == circle`: 
 ```
-found = ri.find([('size', '<', 0.01), ('shape', '==', 'circle')])
+found = ri.find([('size', '<', 0.001), ('shape', '==', 'circle')])
 for f in found:
     print(f.shape, f.size)
 ```
@@ -44,5 +46,3 @@ for f in found:
 
  * Indexed fields must be type `float`, `int`, or `str`.
  * Not thread-safe.
- * No persistence. This is for in-memory objects only.
- * Not an entire DB, just the part you probably need.
