@@ -1,7 +1,6 @@
 import sqlite3
 from collections.abc import Iterable
 from typing import List, Tuple, Dict, Any, Optional
-import ctypes
 
 PYTYPE_TO_SQLITE = {
     int: 'INTEGER',
@@ -57,7 +56,7 @@ class RangeIndex:
 
         ptr = id(obj)
         self.objs[ptr] = obj
-        values = [obj.__dict__.get(c, None) for c in self.fields] + [ptr]
+        values = [getattr(obj, c, None) for c in self.fields] + [ptr]
         cur = self.conn.cursor()
         cur.execute(q, values)
         self.conn.commit()
@@ -71,7 +70,7 @@ class RangeIndex:
         for obj in objs:
             ptr = id(obj)
             self.objs[ptr] = obj
-            values =  [obj.__dict__.get(c, None) for c in self.fields] + [ptr]
+            values = [getattr(obj, c, None) for c in self.fields] + [ptr]
             rows.append(values)
 
         cur = self.conn.cursor()
@@ -111,7 +110,7 @@ class RangeIndex:
         """Find Python object ids that match the query constraints."""
         self._validate_query(query)
         if not query:
-            return tuple(self.objs.keys())
+            return list(self.objs.keys())
         q = [f'SELECT {PYOBJ_COL} FROM {self.table_name} WHERE']
         values = []
         for i, triplet in enumerate(query):
@@ -155,10 +154,10 @@ class RangeIndex:
                     triplet, field))
             if value is not None:
                 if self.fields[field] in [int, float] and type(value) not in [int, float]:
-                    raise QueryTypeError("Error in query {}: expected type  but got {}".format(
+                    raise QueryTypeError("Error in query {}: expected type {} but got {}".format(
                         triplet, self.fields[field], type(value)))
                 elif self.fields[field] == str and type(value) != str:
-                    raise QueryTypeError("Error in query {}: expected type  but got {}".format(
+                    raise QueryTypeError("Error in query {}: expected type {} but got {}".format(
                         triplet, self.fields[field], type(value)))
             if value is None and op.upper() not in ['IS', 'IS NOT']:
                 raise QueryBadNullComparator("Error in query at {}: Use 'IS' or 'IS NOT' as the operator "

@@ -1,12 +1,15 @@
 # RangeIndex
 
-Find Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
+Data structure for looking up Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
 
- * Works on your existing Python objects.
- * Objects are only referenced, not copied.
- * Uses an in-memory SQLite under the hood. So it's fast, RAM-efficient, and well-tested.
- 
 `pip install rangeindex`
+
+ * Lookup is typically 100x to 1000x faster than linear search.
+ * Uses an in-memory SQLite. Better than any pure-python index.
+ * Uses about 100MB RAM per million objects indexed.
+ * Needs Python 3.6+. No other dependencies.
+
+[See docs for more details.](https://pypi.org/project/rangeindex/)
 
 ### Example
 
@@ -37,19 +40,9 @@ for f in found:
     print(f.shape, f.size)
 ```
 
-[See docs for more.](https://pypi.org/project/rangeindex/)
-
-### Performance 
-
- * RangeIndex `find()` is often 100x to 1000x faster than linear search.
- * Uses ~100 bytes of RAM per object indexed, so indexing 1 million objects takes ~100MB.
-
-[Performance details](perf/perf.md)
-
 ### Limitations
 
  * Indexed fields must be type `float`, `int`, or `str`.
- * If you only need exact-value lookups, consider [HashIndex](https://github.com/manimino/hashindex/) instead.
  * Not thread-safe.
  * No persistence. This is for in-memory objects only.
  * Not an entire DB, just the part you probably need.

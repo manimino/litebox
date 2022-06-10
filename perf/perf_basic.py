@@ -1,7 +1,7 @@
 import random
 import time
 from dataclasses import dataclass
-from rangeindex.rangeindex import RangeIndex
+from rangeindex import RangeIndex
 
 
 az = 'qwertyuiopasdfghjklzxcvbnm'

@@ -1,4 +1,4 @@
-from rangeindex.rangeindex import (
+from rangeindex import (
     RangeIndex,
     QueryMalformedError,
     QueryBadOperatorError,

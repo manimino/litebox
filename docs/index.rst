@@ -74,3 +74,6 @@ Functions
 ``remove``
 
 ``update``
+
+Performance
+~~~~~~~~~~~

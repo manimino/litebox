@@ -1,5 +1,9 @@
+import random
+
 from dataclasses import dataclass
-from rangeindex.rangeindex import RangeIndex
+from collections import namedtuple
+
+from rangeindex import RangeIndex
 
 
 @dataclass
@@ -15,3 +19,12 @@ def test_index_on_missing_attributes():
     ri.add(t)
     found = ri.find([('z', 'is', None)])
     assert found == [t]
+
+
+def test_index_namedtuple():
+    Point = namedtuple("Point", "x")
+    pt = Point(random.random())
+    ri = RangeIndex({'x': float, 'y': float})
+    ri.add(pt)
+    ls = ri.find([('x', '<=', 1)])
+    assert ls == [pt]

@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'HashBox'
+project = 'RangeIndex'
 copyright = '2022, Theo Walker'
 author = 'Theo Walker'
 
