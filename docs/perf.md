@@ -17,15 +17,15 @@ objects your `ri.find()` returns. The break-even point is where `find` matches a
 
 Example - when you have 1 million objects:
 
-**Num of matches**|    **RangeIndex**    | **linear search** |**Speedup**
-:-----:|:--------------------:|:-----------------:|:-----:
-1|        0.1ms         |       0.08s       |784x
-10|        0.12ms        |       0.08s       |638x
-100|        0.33ms        |       0.08s       |239x
-1000|         0.0s         |       0.08s       |45x
-10000|        0.01s         |       0.08s       |5x
-100000|        0.16s         |       0.08s       |0.5x
-1000000|        1.42s         |       0.12s       |0.1x
+**Num of matches**| **RangeIndex** | **linear search** |**Speedup**
+:-----:|:--------------:|:-----------------:|:-----:
+1|     0.1ms      |       80ms       |784x
+10|     0.12ms     |       80ms       |638x
+100|     0.33ms     |       80ms       |239x
+1K|     1.8ms      |       80ms        |45x
+10K|      10ms      |       80ms        |5x
+100K|     160ms      |       80ms        |0.5x
+1M|     1.42s      |       120ms       |0.1x
 
 If you have fewer than 1000 objects, just use a linear search. Beyond that, RangeIndex will be useful.
 
