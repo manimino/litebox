@@ -27,6 +27,11 @@ Example - when you have 1 million objects:
 100K|     160ms      |       80ms        |0.5x
 1M|     1.42s      |       120ms       |0.1x
 
+#### Notes here
+
+- Generator expressions are a little faster than `filter`
+- Pandas / numpy arrays 
+
 If you have fewer than 1000 objects, just use a linear search. Beyond that, RangeIndex will be useful.
 
 #### Memory usage
