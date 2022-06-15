@@ -1,7 +1,7 @@
 import duckdb
 import pandas as pd
 from collections.abc import Iterable
-from typing import List, Tuple, Dict, Any, Optional
+from typing import List, Tuple, Dict, Any, Optional, Union
 
 PYTYPE_TO_SQLITE = {
     int: 'BIGINT',
@@ -53,12 +53,24 @@ class RangeIndex:
         self.objs.update(zip(obj_ids, objs))
         self.con.execute(f"INSERT INTO {self.table_name} SELECT * FROM df")
 
-    def find(self, query: Optional[List[Tuple]] = None) -> List:
+    def find(self, query: Union[str, Optional[List[Tuple]]] = None) -> List:
         if not query:
             return list(self.objs.values())
         return list(self.objs[ptr] for ptr in self.find_obj_ids(query))
 
-    def find_obj_ids(self, query: Optional[List[Tuple]] = None) -> List:
+    def find_obj_ids(self, query: Union[str, Optional[List[Tuple]]] = None) -> List:
+        if not query:
+            return list(self.objs)
+        
+        if isinstance(query, Iterable):
+            qstr, values = self._tuples_to_query_str(query)
+            self.con.execute(qstr, values)
+        else:
+            self.con.execute(query)
+        rows = list(r[0] for r in self.con.fetchall())
+        return rows
+
+    def _tuples_to_query_str(self, query: Optional[List[Tuple]] = None) -> Tuple[str, List]:
         self._validate_query(query)
         q = [f'SELECT {PYOBJ_COL} FROM {self.table_name} WHERE']
         values = []
@@ -70,12 +82,9 @@ class RangeIndex:
             else:
                 q.append(f'{field} {op} ?')
                 values.append(value)
-            if i < len(query)-1:
+            if i < len(query) - 1:
                 q.append('AND')
-
-        self.con.execute('\n'.join(q), values)
-        rows = list(r[0] for r in self.con.fetchall())
-        return rows
+        return '\n'.join(q), values
 
     def update(self, obj: Any, updates: Dict[str, Any]):
         set_cols = []

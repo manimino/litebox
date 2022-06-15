@@ -41,3 +41,11 @@ def test_multiple_rangeindex_instances():
 
     assert ri1.find([('x', '<=', 1)]) == [t1]
     assert ri2.find([('x', '<=', 1)]) == [t2]
+
+
+def test_multiple_add_many():
+    pass
+
+
+def test_add_objects_twice():
+    pass
