@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='rangeindex',
-    version='0.2.0',
+    version='0.3.0',
     license='MIT',
     author="Theo Walker",
     packages=['rangeindex'],
@@ -10,5 +10,5 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/manimino/rangeindex',
     keywords=['rangeindex', 'objects', 'index', 'range index', 'range'],
-    install_requires=[],
+    install_requires=['duckdb'],
 )
