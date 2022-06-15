@@ -14,7 +14,6 @@ For a 10M object dataset with two numeric indices:
                      | Comprehension      | DuckDB | Sqlite | Pandas | Polars        
 -------------------- | ------------------ | ------ | ------ | ------ | --------------
 Build 10M item index | 2.2s               | 4s     | 30s    | 15s    | 3.9s          
-Python Object size   | 2.6GB              | 2.6GB  | 2.6GB  | 2.6GB  | 2.6GB         
 Index RAM size       | N/A                | 1.2GB  | 2.1GB  | 300MB  | 300MB         
 Get 1 item           | 0.9s               | 1ms    | 0.16ms | 40ms   | 40ms          
 Get 10 items         | 0.9s               | 2ms    | 0.17ms | 38ms   | 40ms          
@@ -27,7 +26,11 @@ Get 10M items        | 1.13s              | 4.5s   | 21.3s  | 0.6s   | 0.81s
 Update 1 item        | 0.9s               | 1ms    | 0.1ms  | 56ms   | 3.9s
 Remove 1 item        | 2.2s               | 1ms    | 0.1ms  | 0.63s  | 3.9s
 
-"Get 1 item" refers to running a `find()` that returns 1 item on average.
+"Get 1 item" means running a `find()` that returns 1 item on average.
+
+The size in RAM of 10M Python objects is 2.3GB in this test. You'll notice that all 4 indices are smaller than
+this. That's because Python primitives are very large in memory. For example, a Python `int` uses 28 bytes.
+The indices are using lower-level primitives, allowing more efficient storage.
 
 ### Discussion
 
