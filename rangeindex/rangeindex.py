@@ -8,7 +8,7 @@ PYTYPE_TO_SQLITE = {
     float: 'REAL'
 }
 
-PYOBJ_COL = 'py_obj_id_reserved'
+PYOBJ_COL = '__obj_id_reserved__'
 
 table_id = 0  # keeps sqlite table names unique when using multiple indices
 
@@ -27,11 +27,6 @@ class RangeIndex:
         self.conn = sqlite3.connect(':memory:')
         self.fields = fields
 
-        # TODO: store a sorted (list? deque? skiplist?) of tuples of (key, obj)
-        # when there are many object keys found, it will be faster to
-        # linear scan over all our objects and match keys
-        # than it is to do a million dict lookups.
-
         # create sqlite table
         tbl = [f'CREATE TABLE {self.table_name} (']
         for field, pytype in fields.items():
@@ -41,12 +36,17 @@ class RangeIndex:
         tbl.append(')')
         cur = self.conn.cursor()
         cur.execute('\n'.join(tbl))
+        # Deferring creation of indices until after data has been added is much faster.
+        self.indices_made = False
 
+    def _create_indices(self):
         # create indices on all columns
         # pyobj column needs an index to do fast updates / deletes
+        cur = self.conn.cursor()
         for col in self.fields:
             idx = f'CREATE INDEX idx_{col} ON {self.table_name}({col})'
             cur.execute(idx)
+        self.indices_made = True
 
     def add(self, obj: Any):
         # TODO make this a constant
@@ -60,6 +60,8 @@ class RangeIndex:
         cur = self.conn.cursor()
         cur.execute(q, values)
         self.conn.commit()
+        if not self.indices_made:
+            self._create_indices()
 
     def add_many(self, objs: List[any]):
         value_str = ','.join(['?'] * (len(self.fields) + 1))
@@ -76,6 +78,8 @@ class RangeIndex:
         cur = self.conn.cursor()
         cur.executemany(q, rows)
         self.conn.commit()
+        if not self.indices_made:
+            self._create_indices()
 
     def remove(self, obj: Any):
         ptr = id(obj)
@@ -124,7 +128,8 @@ class RangeIndex:
         rows = cur.execute('\n'.join(q), values)
         return list(r[0] for r in rows.fetchall())
 
-    def _validate_fields(self, fields):
+    @staticmethod
+    def _validate_fields(fields):
         if not fields or not isinstance(fields, dict):
             raise InvalidFields("Need a nonempty dict of fields, e.g. {'x': float}")
         for i, f in enumerate(fields):
