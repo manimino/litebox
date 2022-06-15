@@ -1,16 +1,17 @@
-import sqlite3
+import duckdb
+import pandas as pd
 from collections.abc import Iterable
 from typing import List, Tuple, Dict, Any, Optional
 
 PYTYPE_TO_SQLITE = {
-    int: 'INTEGER',
-    str: 'TEXT',
-    float: 'REAL'
+    int: 'BIGINT',
+    str: 'VARCHAR',
+    float: 'DOUBLE'
 }
 
-PYOBJ_COL = '__obj_id_reserved__'
+PYOBJ_COL = 'obj_id_reserved'
 
-table_id = 0  # keeps sqlite table names unique when using multiple indices
+table_id = 0  # keeps table names unique when using multiple indices
 
 
 def get_next_table_id():
@@ -20,74 +21,61 @@ def get_next_table_id():
 
 
 class RangeIndex:
-    def __init__(self, fields: Dict[str, type]):
+
+    def __init__(self, fields: Dict[str, Any]):
         self._validate_fields(fields)
-        self.objs = dict()  # maps {id(object): object}
-        self.table_name = 'ri_' + str(get_next_table_id())
-        self.conn = sqlite3.connect(':memory:')
         self.fields = fields
+        self.objs = dict()  # maps {id(object): object}
+        self.table_name = 'table_' + str(get_next_table_id())
+        self.con = duckdb.connect(database=':memory:')
 
-        # create sqlite table
-        tbl = [f'CREATE TABLE {self.table_name} (']
-        for field, pytype in fields.items():
-            s_type = PYTYPE_TO_SQLITE[pytype]
-            tbl.append(f'{field} {s_type},')
-        tbl.append(f'{PYOBJ_COL} INTEGER')
-        tbl.append(')')
-        cur = self.conn.cursor()
-        cur.execute('\n'.join(tbl))
-        # Deferring creation of indices until after data has been added is much faster.
-        self.indices_made = False
-
-    def _create_indices(self):
-        # create indices on all columns
-        # pyobj column needs an index to do fast updates / deletes
-        cur = self.conn.cursor()
-        for col in self.fields:
-            idx = f'CREATE INDEX idx_{col} ON {self.table_name}({col})'
-            cur.execute(idx)
-        self.indices_made = True
+        # create duckdb table
+        cols = [f'{field} {PYTYPE_TO_SQLITE[ftype]}' for field, ftype in fields.items()]
+        cols.append(f'{PYOBJ_COL} UBIGINT')
+        col_str = ', '.join(cols)
+        self.con.execute(f"CREATE TABLE {self.table_name}({col_str})")
 
     def add(self, obj: Any):
-        # TODO make this a constant
-        col_str = ','.join(self.fields.keys()) + f',{PYOBJ_COL}'
-        value_str = ','.join(['?']*(len(self.fields)+1))
-        q = f'INSERT INTO {self.table_name} ({col_str}) VALUES({value_str})'
-
         ptr = id(obj)
+        values = [getattr(obj, f, None) for f in self.fields] + [ptr]
+        qmarks = ','.join(['?']*(len(self.fields) + 1))
+        self.con.execute(f'INSERT INTO {self.table_name} VALUES ({qmarks})', values)
         self.objs[ptr] = obj
-        values = [getattr(obj, c, None) for c in self.fields] + [ptr]
-        cur = self.conn.cursor()
-        cur.execute(q, values)
-        self.conn.commit()
-        if not self.indices_made:
-            self._create_indices()
 
-    def add_many(self, objs: List[any]):
-        value_str = ','.join(['?'] * (len(self.fields) + 1))
-        col_str = ','.join(self.fields.keys()) + f',{PYOBJ_COL}'
-        q = f'INSERT INTO {self.table_name} ({col_str}) VALUES ({value_str})'
+    def add_many(self, objs: List[Any]):
+        # Create a temporary dataframe and add it to the DB.
+        # This is recommended by the DuckDB docs, and is much faster than inserting with cursor.executemany().
+        df = pd.DataFrame({
+            field: [getattr(obj, field, None) for obj in objs] for field in self.fields
+        })
+        obj_ids = [id(obj) for obj in objs]
+        df[PYOBJ_COL] = obj_ids
+        self.objs.update(zip(obj_ids, objs))
+        self.con.execute(f"INSERT INTO {self.table_name} SELECT * FROM df")
 
-        rows = []
-        for obj in objs:
-            ptr = id(obj)
-            self.objs[ptr] = obj
-            values = [getattr(obj, c, None) for c in self.fields] + [ptr]
-            rows.append(values)
+    def find(self, query: Optional[List[Tuple]] = None) -> List:
+        if not query:
+            return list(self.objs.values())
+        return list(self.objs[ptr] for ptr in self.find_obj_ids(query))
 
-        cur = self.conn.cursor()
-        cur.executemany(q, rows)
-        self.conn.commit()
-        if not self.indices_made:
-            self._create_indices()
+    def find_obj_ids(self, query: Optional[List[Tuple]] = None) -> List:
+        self._validate_query(query)
+        q = [f'SELECT {PYOBJ_COL} FROM {self.table_name} WHERE']
+        values = []
+        for i, triplet in enumerate(query):
+            field, op, value = triplet
 
-    def remove(self, obj: Any):
-        ptr = id(obj)
-        del self.objs[ptr]
-        q = f'DELETE FROM {self.table_name} WHERE {PYOBJ_COL}=?'
-        cur = self.conn.cursor()
-        cur.execute(q, (ptr,))
-        self.conn.commit()
+            if value is None:
+                q.append(f'{field} {op} NULL')
+            else:
+                q.append(f'{field} {op} ?')
+                values.append(value)
+            if i < len(query)-1:
+                q.append('AND')
+
+        self.con.execute('\n'.join(q), values)
+        rows = list(r[0] for r in self.con.fetchall())
+        return rows
 
     def update(self, obj: Any, updates: Dict[str, Any]):
         set_cols = []
@@ -101,32 +89,13 @@ class RangeIndex:
         ptr = id(obj)
         set_values.append(ptr)
         print(q, set_values)
-        cur = self.conn.cursor()
-        cur.execute(q, set_values)
-        self.conn.commit()
+        self.con.execute(q, set_values)
 
-    def find(self, query: Optional[List[Tuple]] = None) -> List[Any]:
-        if not query:
-            return list(self.objs.values())
-        return list(self.objs[ptr] for ptr in self.find_obj_ids(query))
-
-    def find_obj_ids(self, query: Optional[List[Tuple]] = None) -> List:
-        """Find Python object ids that match the query constraints."""
-        self._validate_query(query)
-        if not query:
-            return list(self.objs.keys())
-        q = [f'SELECT {PYOBJ_COL} FROM {self.table_name} WHERE']
-        values = []
-        for i, triplet in enumerate(query):
-            field, op, value = triplet
-            values.append(value)
-            if i < len(query)-1:
-                q.append(f'{field} {op} ? AND')
-            else:
-                q.append(f'{field} {op} ?')
-        cur = self.conn.cursor()
-        rows = cur.execute('\n'.join(q), values)
-        return list(r[0] for r in rows.fetchall())
+    def remove(self, obj: Any):
+        ptr = id(obj)
+        del self.objs[ptr]
+        q = f'DELETE FROM {self.table_name} WHERE {PYOBJ_COL}=?'
+        self.con.execute(q, (ptr,))
 
     @staticmethod
     def _validate_fields(fields):
@@ -166,7 +135,7 @@ class RangeIndex:
                         triplet, self.fields[field], type(value)))
             if value is None and op.upper() not in ['IS', 'IS NOT']:
                 raise QueryBadNullComparator("Error in query at {}: Use 'IS' or 'IS NOT' as the operator "
-                                             "when comparing to None values.".format(triplet))
+                                             "when comparing to NULL values.".format(triplet))
 
 
 class InvalidFields(Exception):

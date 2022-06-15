@@ -10,7 +10,7 @@ from rangeindex import RangeIndex
 class Thing:
     x: int = 0
     y: float = 0.0
-    desc: str = ''
+    s: str = ''
 
 
 def test_index_on_missing_attributes():
