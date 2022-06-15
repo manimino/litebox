@@ -1,38 +1,52 @@
-# RangeIndex Performance
+# Performance Analysis
 
-#### Insert speed
+There are many ways to build an index of Python objects. Here is how they compare.
 
- * Add an object: a few microseconds
- * Add a million objects: a few seconds
- * Using `add_many(list_of_objs)` instead of calling `add(obj)` for each object is about twice as fast.
- 
-#### Find speed (vs. linear search)
+### Baseline
 
-If you were not using a RangeIndex, you might use Python to get all 
-matching objects in linear time. For example, `filter(lambda obj: obj.x < 3, objects)` or 
-`tuple(obj for obj in objects if obj.x < 3)`. 
+In Python, you'd use a comprehension like `list(obj for obj in objects if obj.x > 0.5 and obj.y < 0.2)`.
+There are other ways (e.g. `filter()`), but comprehensions are the fastest, so that's the point of comparison.
 
-RangeIndex will usually be much faster than a linear search. The speedup depends on how many 
-objects your `ri.find()` returns. The break-even point is where `find` matches about 5~10% of the dataset.
+### Benchmark
 
-Example - when you have 1 million objects:
+For a 10M object dataset with two numeric indices:
 
-**Num of matches**|    **RangeIndex**    | **linear search** |**Speedup**
-:-----:|:--------------------:|:-----------------:|:-----:
-1|        0.1ms         |       0.08s       |784x
-10|        0.12ms        |       0.08s       |638x
-100|        0.33ms        |       0.08s       |239x
-1000|         0.0s         |       0.08s       |45x
-10000|        0.01s         |       0.08s       |5x
-100000|        0.16s         |       0.08s       |0.5x
-1000000|        1.42s         |       0.12s       |0.1x
+                     | Comprehension      | DuckDB | Sqlite | Pandas | Polars        
+-------------------- | ------------------ | ------ | ------ | ------ | --------------
+Build 10M item index | 2.2s               | 4s     | 30s    | 15s    | 3.9s          
+Index RAM size       | N/A                | 1.2GB  | 2.1GB  | 300MB  | 300MB         
+Get 1 item           | 0.9s               | 1ms    | 0.16ms | 40ms   | 40ms          
+Get 10 items         | 0.9s               | 2ms    | 0.17ms | 38ms   | 40ms          
+Get 100 items        | 0.9s               | 20ms   | 0.56ms | 39ms   | 40ms          
+Get 1K items         | 0.9s               | 82ms   | 4ms    | 40ms   | 40ms          
+Get 10K items        | 0.9s               | 0.12s  | 30ms   | 43ms   | 40ms          
+Get 100K items       | 0.9s               | 0.2s   | 0.22s  | 73ms   | 70ms          
+Get 1M items         | 0.9s               | 0.8s   | 2.2s   | 0.2s   | 0.21s         
+Get 10M items        | 1.13s              | 4.5s   | 21.3s  | 0.6s   | 0.81s         
+Update 1 item        | 0.9s               | 1ms    | 0.1ms  | 56ms   | 3.9s
+Remove 1 item        | 2.2s               | 1ms    | 0.1ms  | 0.63s  | 3.9s
 
-If you have fewer than 1000 objects, just use a linear search. Beyond that, RangeIndex will be useful.
+"Get 1 item" means running a `find()` that returns 1 item on average.
 
-#### Memory usage
+The size in RAM of 10M Python objects is 2.3GB in this test. You'll notice that all 4 indices are smaller than
+this. That's because Python primitives are very large in memory. For example, a Python `int` uses 28 bytes.
+The indices are using lower-level primitives, allowing more efficient storage.
 
- * Indexing an object costs about 70 bytes of overhead. 
- * Each indexed numeric field costs about 30 bytes. 
- * Indexing 1 million objects on one numeric field takes about 100MB. 
- * Indexing 1 million objects on 10 numeric fields takes about 400MB. 
- * Indexing on string fields will vary according to the length of the strings.
+### Discussion
+
+**DuckDB** is the all-around winner. It's not the best in any category, but it lacks any major drawback.
+It's fast to build. It takes some RAM, but the RAM scales well as you add more columns. It executes queries
+in parallel, and uses regular SQL. 
+
+**SQLite** is the race car. It's fastest by far for small queries, thanks to its row-based nature and B-tree indices. 
+But it suffers from slow build time, high RAM use (and scales with number of columns), and terrible performance
+when the query results in more than 10% of the total items.
+
+**Pandas** offers consistent performance and a very low RAM cost. But it loses to DuckDB because it cannot
+execute queries in parallel, takes a longer time to build, offers poor performance on small queries, and
+is slow on update / remove operations.
+
+**Polars** has some advantages over pandas. It has a lightning-fast build time, low RAM usage, and parallel query
+execution. But due to its immutable nature, changing any data point requires replacing the whole column / dataframe.
+And like Pandas, its results on small queries are unimpressive compared to DuckDB.
+
