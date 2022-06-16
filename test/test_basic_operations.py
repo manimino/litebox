@@ -21,8 +21,8 @@ def make_thing():
     return Thing(x=random.choice(ten), y=random.random(), s=''.join(s))
 
 
-def test_create_insert_find():
-    ri = RangeIndex({'x': int, 'y': float, 's': str})
+def test_create_insert_find(backend):
+    ri = RangeIndex({'x': int, 'y': float, 's': str}, backend)
     obj_to_find = make_thing()
     obj_to_find.x = 8
     not_this_one = make_thing()
@@ -33,8 +33,8 @@ def test_create_insert_find():
     assert found_objs == [obj_to_find]
 
 
-def test_delete():
-    ri = RangeIndex({'x': int, 'y': float, 's': str})
+def test_delete(backend):
+    ri = RangeIndex({'x': int, 'y': float, 's': str}, backend)
     t = make_thing()
     ri.add(t)
     found_objs = ri.find()
@@ -44,8 +44,8 @@ def test_delete():
     assert found_objs == []
 
 
-def test_update():
-    ri = RangeIndex({'x': int, 'y': float, 's': str})
+def test_update(backend):
+    ri = RangeIndex({'x': int, 'y': float, 's': str}, backend)
     t = make_thing()
     t.x = 2
     ri.add(t)
@@ -58,8 +58,8 @@ def test_update():
     assert objs == [t]
 
 
-def test_find_equal():
-    ri = RangeIndex({'x': int, 'y': float, 's': str})
+def test_find_equal(backend):
+    ri = RangeIndex({'x': int, 'y': float, 's': str}, backend)
     t = make_thing()
     ri.add(t)
     int_result = ri.find([('x', '==', t.x)])
@@ -70,8 +70,8 @@ def test_find_equal():
     assert [t] == str_result
 
 
-def test_find_null():
-    ri = RangeIndex({'x': int, 'y': float, 's': str})
+def test_find_null(backend):
+    ri = RangeIndex({'x': int, 'y': float, 's': str}, backend)
     t = Thing(x=None, y=None, s=None)
     ri.add(t)
     int_result = ri.find([('x', 'is', t.x)])
@@ -82,9 +82,9 @@ def test_find_null():
     assert [t] == str_result
 
 
-def test_add_many():
+def test_add_many(backend):
     ten_things = [make_thing() for _ in range(10)]
-    ri = RangeIndex({'x': int, 'y': float, 's': str})
+    ri = RangeIndex({'x': int, 'y': float, 's': str}, backend)
     ri.add_many(ten_things)
     found = ri.find()
     assert len(found) == len(ten_things)
