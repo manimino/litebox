@@ -35,7 +35,7 @@ class DuckDBIndex:
         self.con.execute(f'INSERT INTO {self.table_name} VALUES ({qmarks})', values)
         self.objs[ptr] = obj
 
-    def add_many(self, objs: Iterable[Any]):
+    def add_many(self, objs: List[Any]):
         obj_ids = [id(obj) for obj in objs]
 
         # Build a dict first to eliminate repeats in objs. Also eliminate objs we already have.
