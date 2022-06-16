@@ -23,6 +23,7 @@ class Object:
     def __init__(self):
         self.size = random.random()
         self.shape = random.choice(['square', 'circle'])
+        self.data = 'aXQncyBhIHNlY3JldCB0byBldmVyeWJvZHk='
 
 objects = [Object() for _ in range(10**6)]
 ```
@@ -31,13 +32,12 @@ Index them on `size` and `shape`:
 ```
 from rangeindex import RangeIndex
 
-ri = RangeIndex({'size': float, 'shape': str})
-ri.add_many(objects)
+ri = RangeIndex({'size': float, 'shape': str}, objects)
 ```
 
 Find objects that have `size < 0.001` and `shape == circle`: 
 ```
-found = ri.find([('size', '<', 0.001), ('shape', '==', 'circle')])
+found = ri.find('size < 0.001 and shape == "circle"')
 for f in found:
     print(f.shape, f.size)
 ```

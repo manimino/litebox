@@ -8,8 +8,12 @@ from rangeindex.idx_duckdb import DuckDBIndex
 
 
 class RangeIndex:
-
-    def __init__(self, on: Dict[str, Any] = None, data: Optional[List[Any]] = None, backend: str = SQLITE):
+    def __init__(
+        self,
+        on: Dict[str, Any] = None,
+        data: Optional[List[Any]] = None,
+        backend: str = SQLITE,
+    ):
         self._validate_fields(on)
         self.backend = backend.lower()
         if self.backend == SQLITE:
@@ -19,7 +23,9 @@ class RangeIndex:
         elif self.backend == DUCKDB:
             self.idx = DuckDBIndex(on)
         else:
-            raise InvalidBackendError(f"Backend must be one of: '{DUCKDB}', '{SQLITE}', '{PANDAS}'")
+            raise InvalidBackendError(
+                f"Backend must be one of: '{DUCKDB}', '{SQLITE}', '{PANDAS}'"
+            )
         if data is not None:
             self.add_many(data)
 
@@ -46,39 +52,80 @@ class RangeIndex:
             raise InvalidFields("Need a nonempty dict of fields, such as {'x': float}")
         for i, f in enumerate(fields):
             if fields[f] not in [int, float, str]:
-                raise TypeError('Expected int, float, or str field type at position {}, but got {}'.format(i, fields[f]))
+                raise TypeError(
+                    "Expected int, float, or str field type at position {}, but got {}".format(
+                        i, fields[f]
+                    )
+                )
             if not isinstance(f, str):
-                raise TypeError('Field name must be a str, got {} at position {}'.format(f, i))
+                raise TypeError(
+                    "Field name must be a str, got {} at position {}".format(f, i)
+                )
 
     def _validate_query_triplets(self, query: Optional[List[Tuple]]):
         if query is None:
             return
         if not isinstance(query, Iterable):
-            raise QueryMalformedError("Query must be a list of tuples, example: [('field', '<', 3)]")
+            raise QueryMalformedError(
+                "Query must be a list of tuples, example: [('field', '<', 3)]"
+            )
         if not len(query):
             return
         for i, triplet in enumerate(query):
             if not isinstance(triplet, Iterable):
-                raise QueryMalformedError("Query must be a list of tuples, example: [('field', '<', 3)]")
+                raise QueryMalformedError(
+                    "Query must be a list of tuples, example: [('field', '<', 3)]"
+                )
             if len(triplet) != 3:
-                raise QueryMalformedError("Error in query element {}: expected a tuple of length 3, but got {}".format(
-                    i, triplet))
+                raise QueryMalformedError(
+                    "Error in query element {}: expected a tuple of length 3, but got {}".format(
+                        i, triplet
+                    )
+                )
             field, op, value = triplet
-            if op.upper() not in ['<', '>', '==', '=', '!=', '>=', '<=', 'IS', 'IS NOT']:
-                raise QueryBadOperatorError("Error in query at {}: {} is not a valid operator".format(triplet, op))
+            if op.upper() not in [
+                "<",
+                ">",
+                "==",
+                "=",
+                "!=",
+                ">=",
+                "<=",
+                "IS",
+                "IS NOT",
+            ]:
+                raise QueryBadOperatorError(
+                    "Error in query at {}: {} is not a valid operator".format(
+                        triplet, op
+                    )
+                )
             if field not in self.idx.fields:
-                raise QueryUnknownFieldError("Error in query at {}: {} is not an indexed field".format(
-                    triplet, field))
+                raise QueryUnknownFieldError(
+                    "Error in query at {}: {} is not an indexed field".format(
+                        triplet, field
+                    )
+                )
             if value is not None:
-                if self.idx.fields[field] in [int, float] and type(value) not in [int, float]:
-                    raise QueryTypeError("Error in query {}: expected type {} but got {}".format(
-                        triplet, self.idx.fields[field], type(value)))
+                if self.idx.fields[field] in [int, float] and type(value) not in [
+                    int,
+                    float,
+                ]:
+                    raise QueryTypeError(
+                        "Error in query {}: expected type {} but got {}".format(
+                            triplet, self.idx.fields[field], type(value)
+                        )
+                    )
                 elif self.idx.fields[field] == str and type(value) != str:
-                    raise QueryTypeError("Error in query {}: expected type {} but got {}".format(
-                        triplet, self.idx.fields[field], type(value)))
-            if value is None and op.upper() not in ['IS', 'IS NOT']:
-                raise QueryBadNullComparator("Error in query at {}: Use 'IS' or 'IS NOT' as the operator "
-                                             "when comparing to NULL values.".format(triplet))
+                    raise QueryTypeError(
+                        "Error in query {}: expected type {} but got {}".format(
+                            triplet, self.idx.fields[field], type(value)
+                        )
+                    )
+            if value is None and op.upper() not in ["IS", "IS NOT"]:
+                raise QueryBadNullComparator(
+                    "Error in query at {}: Use 'IS' or 'IS NOT' as the operator "
+                    "when comparing to NULL values.".format(triplet)
+                )
 
     def __len__(self):
         return len(self.idx)

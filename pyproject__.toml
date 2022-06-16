@@ -1,0 +1,63 @@
+[project]
+name = "infer_pyproject"
+version = "0.1.0"
+description = "Create a pyproject.toml file for an existing project."
+authors = [
+    "Martin Thoma <info@martin-thoma.de>"
+]
+license = "MIT"
+readme = "README.md"
+python = "^3.6"
+homepage = "https://github.com/MartinThoma/infer_pyproject"
+repository = "https://github.com/MartinThoma/infer_pyproject"
+documentation = "https://github.com/MartinThoma/infer_pyproject"
+
+keywords = ["packaging", "dependency", "infer", "pyproject.toml"]
+
+classifiers = [
+    "Topic :: Software Development"
+]
+
+# Requirements
+[dependencies]
+Click = "^7.0"
+
+[dev-dependencies]
+black = { version = "^18.3-alpha.0", python = "^3.6" }
+
+[scripts]
+poetry = "infer_pyproject.cli:main"
+
+[build-system]
+requires = [
+    "setuptools >= 35.0.2",
+    "setuptools_scm >= 2.0.0, <3"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target_version = ['py36']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.build
+    | \.dist
+    | \.git
+    | \.github
+    | \.hg
+    | \.ipynb_checkpoints
+    | \.pytest_cache
+    | \.rangeindex.egg-info
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''

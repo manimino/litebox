@@ -1,4 +1,3 @@
-
 class InvalidFields(Exception):
     pass
 
