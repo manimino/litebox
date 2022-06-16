@@ -9,17 +9,19 @@ from rangeindex.idx_duckdb import DuckDBIndex
 
 class RangeIndex:
 
-    def __init__(self, fields: Dict[str, Any], backend: str = DUCKDB):
-        self._validate_fields(fields)
+    def __init__(self, on: Dict[str, Any] = None, data: Optional[List[Any]] = None, backend: str = SQLITE):
+        self._validate_fields(on)
         self.backend = backend.lower()
         if self.backend == SQLITE:
-            self.idx = SqliteIndex(fields)
+            self.idx = SqliteIndex(on)
         elif self.backend == PANDAS:
-            self.idx = PandasIndex(fields)
+            self.idx = PandasIndex(on)
         elif self.backend == DUCKDB:
-            self.idx = DuckDBIndex(fields)
+            self.idx = DuckDBIndex(on)
         else:
             raise InvalidBackendError(f"Backend must be one of: '{DUCKDB}', '{SQLITE}', '{PANDAS}'")
+        if data is not None:
+            self.add_many(data)
 
     def add(self, obj: Any):
         self.idx.add(obj)
@@ -41,7 +43,7 @@ class RangeIndex:
     @staticmethod
     def _validate_fields(fields):
         if not fields or not isinstance(fields, dict):
-            raise InvalidFields("Need a nonempty dict of fields, e.g. {'x': float}")
+            raise InvalidFields("Need a nonempty dict of fields, such as {'x': float}")
         for i, f in enumerate(fields):
             if fields[f] not in [int, float, str]:
                 raise TypeError('Expected int, float, or str field type at position {}, but got {}'.format(i, fields[f]))
