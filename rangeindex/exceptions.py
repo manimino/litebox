@@ -22,5 +22,5 @@ class QueryBadNullComparator(Exception):
     pass
 
 
-class InvalidBackendError(Exception):
+class InvalidEngineError(Exception):
     pass

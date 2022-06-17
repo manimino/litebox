@@ -12,19 +12,19 @@ class RangeIndex:
         self,
         on: Dict[str, Any] = None,
         data: Optional[List[Any]] = None,
-        backend: str = SQLITE,
+        engine: str = SQLITE,
     ):
         self._validate_fields(on)
-        self.backend = backend.lower()
-        if self.backend == SQLITE:
+        self.engine = engine.lower()
+        if self.engine == SQLITE:
             self.idx = SqliteIndex(on)
-        elif self.backend == PANDAS:
+        elif self.engine == PANDAS:
             self.idx = PandasIndex(on)
-        elif self.backend == DUCKDB:
+        elif self.engine == DUCKDB:
             self.idx = DuckDBIndex(on)
         else:
-            raise InvalidBackendError(
-                f"Backend must be one of: '{DUCKDB}', '{SQLITE}', '{PANDAS}'"
+            raise InvalidEngineError(
+                f"Engine must be one of: '{DUCKDB}', '{SQLITE}', '{PANDAS}'"
             )
         if data is not None:
             self.add_many(data)
