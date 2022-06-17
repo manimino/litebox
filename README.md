@@ -61,9 +61,8 @@ Pandas does not use an index data structure; its performance gains over Python a
 arrays, which allow vectorized operations. It will outperform by roughly 10x under all conditions. It uses the least
 RAM and has the slowest `update` and `remove` operations.
 
-### Expected performance
+### Performance
 
 ![Benchmark: sqlite does well on small queries, other engines do better on large queries.](perf/benchmark.png)
 
-
-
+This was generated using random-range queries against a dataset of 1 million objects indexed on two `float` fields.
