@@ -63,8 +63,8 @@ class DuckDBIndex:
         else:
             qstr, values = self._tuples_to_query_str(where)
             self.con.execute(qstr, values)
-        rows = list(r[0] for r in self.con.fetchall())
-        return list(self.objs[ptr] for ptr in rows)
+        df = self.con.fetchdf()
+        return list(self.objs[ptr] for ptr in df[PYOBJ_ID_COL])
 
     def _to_sql(self, where: str):
         return f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where}"

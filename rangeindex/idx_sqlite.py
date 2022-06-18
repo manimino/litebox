@@ -140,26 +140,25 @@ class SqliteIndex:
         In practice, there are surely deeper optimizations available, but this is a good-enough simple threshold
         and makes the worst-case scenario much more palatable (improves benchmarks some 10x or so).
         """
-        limit_int = int(len(self.objs) / log2(len(self.objs)))
+        limit_int = int(len(self.objs) / log2(len(self.objs)+0.000001))
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where_str} LIMIT {limit_int}"
         cur = self.conn.cursor()
         if values:
-            result = cur.execute(query, values)
+            cur.execute(query, values)
         else:
-            result = cur.execute(query)
-        rows = list(r[0] for r in result.fetchall())
-        if len(rows) < limit_int:
-            return list(self.objs[ptr] for ptr in rows)
+            cur.execute(query)
+        ptrs = [r[0] for r in cur]
+        if len(ptrs) < limit_int:
+            return list(self.objs[ptr] for ptr in ptrs)
 
         # If we're here, we got too many rows -- this query would be best run
         # without an index. (speedup of ~5X or more for doing this).
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} NOT INDEXED WHERE {where_str}"
         if values:
-            result = cur.execute(query, values)
+            cur.execute(query, values)
         else:
-            result = cur.execute(query)
-        rows = list(r[0] for r in result.fetchall())
-        return list(self.objs[ptr] for ptr in rows)
+            cur.execute(query)
+        return list(self.objs[r[0]] for r in cur)
 
     @staticmethod
     def _tuples_to_query_str(where: Optional[List[Tuple]] = None) -> Tuple[str, List]:

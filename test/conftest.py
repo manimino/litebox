@@ -4,5 +4,5 @@ from rangeindex.constants import DUCKDB, SQLITE, PANDAS
 
 
 @pytest.fixture(params=[DUCKDB, SQLITE, PANDAS])
-def backend(request):
+def engine(request):
     return request.param

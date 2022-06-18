@@ -1,12 +1,12 @@
 # RangeIndex
 
-Data structure for quickly looking up Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
+Data structure for looking up Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
 
 `pip install rangeindex`
 
 Putting your objects in a RangeIndex will greatly accelerate lookup times. 
 
-For small queries, you can expect a speedup of 10x ~ 100x, versus doing a linear scan in Python such as
+You can expect a speedup of 10x ~ 100x, versus doing a linear scan in Python like
 `matching_objects = [obj for obj in objects if obj.x > ...]`.
 
 ### Example
@@ -58,8 +58,8 @@ It uses a medium amount of RAM, and the index builds reasonably fast.
 #### Pandas
 
 Pandas does not use an index data structure; its performance gains over Python are due to its internal use of numpy 
-arrays, which allow vectorized operations. It will outperform by roughly 10x under all conditions. It uses the least
-RAM and has the slowest `update` and `remove` operations.
+arrays, which allow vectorized operations. It will outperform by roughly 10x ~ 20x under all conditions. It uses a
+small amount of RAM and has the slowest `update` and `remove` operations.
 
 ### Performance
 

@@ -21,8 +21,8 @@ def make_thing():
     return Thing(x=random.choice(ten), y=random.random(), s="".join(s))
 
 
-def test_create_insert_find(backend):
-    ri = RangeIndex({"x": int, "y": float, "s": str}, backend=backend)
+def test_create_insert_find(engine):
+    ri = RangeIndex({"x": int, "y": float, "s": str}, engine=engine)
     obj_to_find = make_thing()
     obj_to_find.x = 8
     not_this_one = make_thing()
@@ -33,8 +33,8 @@ def test_create_insert_find(backend):
     assert found_objs == [obj_to_find]
 
 
-def test_delete(backend):
-    ri = RangeIndex({"x": int, "y": float, "s": str}, backend=backend)
+def test_delete(engine):
+    ri = RangeIndex({"x": int, "y": float, "s": str}, engine=engine)
     t = make_thing()
     ri.add(t)
     found_objs = ri.find()
@@ -44,8 +44,8 @@ def test_delete(backend):
     assert found_objs == []
 
 
-def test_update(backend):
-    ri = RangeIndex({"x": int, "y": float, "s": str}, backend=backend)
+def test_update(engine):
+    ri = RangeIndex({"x": int, "y": float, "s": str}, engine=engine)
     t = make_thing()
     t.x = 2
     ri.add(t)
@@ -58,8 +58,8 @@ def test_update(backend):
     assert objs == [t]
 
 
-def test_find_equal(backend):
-    ri = RangeIndex({"x": int, "y": float, "s": str}, backend=backend)
+def test_find_equal(engine):
+    ri = RangeIndex({"x": int, "y": float, "s": str}, engine=engine)
     t = make_thing()
     ri.add(t)
     int_result = ri.find([("x", "==", t.x)])
@@ -70,8 +70,8 @@ def test_find_equal(backend):
     assert [t] == str_result
 
 
-def test_find_null(backend):
-    ri = RangeIndex({"x": int, "y": float, "s": str}, backend=backend)
+def test_find_null(engine):
+    ri = RangeIndex({"x": int, "y": float, "s": str}, engine=engine)
     t = Thing(x=None, y=None, s=None)
     ri.add(t)
     int_result = ri.find([("x", "is", t.x)])
@@ -82,9 +82,9 @@ def test_find_null(backend):
     assert [t] == str_result
 
 
-def test_add_many(backend):
+def test_add_many(engine):
     ten_things = [make_thing() for _ in range(10)]
-    ri = RangeIndex({"x": int, "y": float, "s": str}, backend=backend)
+    ri = RangeIndex({"x": int, "y": float, "s": str}, engine=engine)
     ri.add_many(ten_things)
     found = ri.find()
     assert len(found) == len(ten_things)
