@@ -22,7 +22,7 @@ class Object:
     def __init__(self):
         self.size = random.random()
         self.shape = random.choice(['square', 'circle'])
-        self.data = 'aXQncyBhIHNlY3JldCB0byBldmVyeWJvZHk='
+        self.other_data = 'aXQncyBhIHNlY3JldCB0byBldmVyeWJvZHk='
 
 # Make a million of them
 objects = [Object() for _ in range(10**6)]
@@ -61,12 +61,14 @@ slower than SQLite.
 
 ![Benchmark: sqlite does well on small queries, other engines do better on large queries.](perf/benchmark.png)
 
-This generated using random-range queries against a dataset of 1 million (10^6) objects indexed on two `float` 
-fields. Note that both axis labels are powers of 10.
+This is a benchmark on random-range queries against a dataset of 1 million (10^6) objects indexed on two `float` 
+fields.
 
 The dashed line `linear` is a Python generator expression. `sqlite` and `pandas` are compared to that line.
 
-SQLite here offers a 15X ~ 400X speedup when matching 1000 or fewer items, but it is about 4X slower than `linear` when 
+Note that both axis labels are powers of 10; `10^3` on the Y-axis indicates a 1000X speedup.
+
+SQLite here offers a 15X ~ 1000X speedup when matching 1000 or fewer items, but it is about 3X slower than `linear` when 
 matching all objects. 
 
-Pandas is 5X ~ 10X faster than `linear` under all conditions.
+Pandas is 5X ~ 20X faster than `linear` under all conditions.
