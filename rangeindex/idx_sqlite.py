@@ -38,9 +38,11 @@ class SqliteIndex:
     def _create_indices(self):
         cur = self.conn.cursor()
         for index in self.indices:
-            index_name = '_'.join(index)
-            index_cols = ','.join(index)
-            idx_str = f"CREATE INDEX idx_{index_name} ON {self.table_name}({index_cols})"
+            index_name = "_".join(index)
+            index_cols = ",".join(index)
+            idx_str = (
+                f"CREATE INDEX idx_{index_name} ON {self.table_name}({index_cols})"
+            )
             cur.execute(idx_str)
         self.indices_made = True
 
@@ -130,7 +132,7 @@ class SqliteIndex:
         In practice, there are surely deeper optimizations available, but this is a good-enough simple threshold
         and makes the worst-case scenario much more palatable (improves benchmarks some 10x or so).
         """
-        limit_int = int(len(self.objs) / log2(len(self.objs)+0.000001))
+        limit_int = int(len(self.objs) / log2(len(self.objs) + 0.000001))
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where} LIMIT {limit_int}"
         cur = self.conn.cursor()
         cur.execute(query)
@@ -140,7 +142,9 @@ class SqliteIndex:
 
         # If we're here, we got too many rows -- this query would be best run
         # without an index. (speedup of ~5X or more for doing this).
-        query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} NOT INDEXED WHERE {where}"
+        query = (
+            f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} NOT INDEXED WHERE {where}"
+        )
         cur.execute(query)
         return list(self.objs[r[0]] for r in cur)
 

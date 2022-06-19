@@ -30,7 +30,7 @@ def test_create_insert_find(engine):
     not_this_one.x = 0
     ri.add(obj_to_find)
     ri.add(not_this_one)
-    found_objs = ri.find('x > 5')
+    found_objs = ri.find("x > 5")
     assert found_objs == [obj_to_find]
 
 

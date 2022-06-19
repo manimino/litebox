@@ -12,7 +12,7 @@ class RangeIndex:
         objs: Optional[List[Any]] = None,
         on: Dict[str, Any] = None,
         engine: str = SQLITE,
-        **kwargs
+        **kwargs,
     ):
         self._validate_fields(on)
         self.engine = engine.lower()
@@ -21,9 +21,7 @@ class RangeIndex:
         elif self.engine == PANDAS:
             self.idx = PandasIndex(on=on, **kwargs)
         else:
-            raise InvalidEngineError(
-                f"Engine must be one of: '{SQLITE}', '{PANDAS}'"
-            )
+            raise InvalidEngineError(f"Engine must be one of: '{SQLITE}', '{PANDAS}'")
         if objs is not None:
             self.add_many(objs)
 

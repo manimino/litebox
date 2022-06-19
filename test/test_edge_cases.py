@@ -6,6 +6,7 @@ from collections import namedtuple
 from rangeindex import RangeIndex
 from rangeindex.constants import PANDAS, SQLITE
 
+
 @dataclass
 class Thing:
     x: int = 0
@@ -88,5 +89,5 @@ def test_add_many_with_duplicates(engine):
 
 
 def test_find_on_empty_idx(engine):
-    ri = RangeIndex(on={'x': float}, engine=engine)
-    assert len(ri.find('x != x')) == 0
+    ri = RangeIndex(on={"x": float}, engine=engine)
+    assert len(ri.find("x != x")) == 0
