@@ -9,7 +9,7 @@ PYTYPE_TO_PANDAS = {float: "float64", int: "int64", str: "O"}
 
 
 class PandasIndex:
-    def __init__(self, fields: Dict[str, type]):
+    def __init__(self, fields: Dict[str, type], **kwargs):
         self.fields = fields
 
         # make empty dataframe

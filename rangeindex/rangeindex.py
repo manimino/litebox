@@ -9,22 +9,23 @@ from rangeindex.idx_sqlite import SqliteIndex
 class RangeIndex:
     def __init__(
         self,
+        objs: Optional[List[Any]] = None,
         on: Dict[str, Any] = None,
-        data: Optional[List[Any]] = None,
         engine: str = SQLITE,
+        **kwargs
     ):
         self._validate_fields(on)
         self.engine = engine.lower()
         if self.engine == SQLITE:
-            self.idx = SqliteIndex(on)
+            self.idx = SqliteIndex(on, **kwargs)
         elif self.engine == PANDAS:
-            self.idx = PandasIndex(on)
+            self.idx = PandasIndex(on, **kwargs)
         else:
             raise InvalidEngineError(
                 f"Engine must be one of: '{SQLITE}', '{PANDAS}'"
             )
-        if data is not None:
-            self.add_many(data)
+        if objs is not None:
+            self.add_many(objs)
 
     def add(self, obj: Any):
         self.idx.add(obj)

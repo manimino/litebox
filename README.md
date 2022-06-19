@@ -28,7 +28,7 @@ class Object:
 objects = [Object() for _ in range(10**6)]
 
 # Build an index on 'shape' and 'size' containing all objects
-ri = RangeIndex({'size': float, 'shape': str}, objects, engine='sqlite')
+ri = RangeIndex(objects, on={'size': float, 'shape': str}, engine='sqlite')
 
 # Find objects matching criteria
 found = ri.find("size < 0.0001 and shape == 'circle'")

@@ -9,23 +9,19 @@ from rangeindex.globals import get_next_table_id
 
 PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT"}
 
-PYOBJ_COL = "__obj_id_reserved__"
-
-table_id = 0  # keeps sqlite table names unique when using multiple indices
-
-
-def get_next_table_id():
-    global table_id
-    table_id += 1
-    return table_id
-
 
 class SqliteIndex:
-    def __init__(self, fields: Dict[str, type]):
+    def __init__(self, fields: Dict[str, type], indices: List[Tuple[str]] = None):
         self.objs = dict()  # maps {id(object): object}
         self.table_name = "ri_" + str(get_next_table_id())
         self.conn = sqlite3.connect(":memory:")
         self.fields = fields
+
+        self.indices = indices
+        if self.indices is None:
+            # By default, create a single-column index on each field.
+            # If you really want no indices whatsoever, specify indices=[].
+            self.indices = [(f,) for f in self.fields]
 
         # create sqlite table
         tbl = [f"CREATE TABLE {self.table_name} ("]
@@ -40,12 +36,12 @@ class SqliteIndex:
         self.indices_made = False
 
     def _create_indices(self):
-        # create indices on all columns
-        # pyobj column needs an index to do fast updates / deletes
         cur = self.conn.cursor()
-        for col in self.fields:
-            idx = f"CREATE INDEX idx_{col} ON {self.table_name}(f0, f1)"
-            cur.execute(idx)
+        for index in self.indices:
+            index_name = '_'.join(index)
+            index_cols = ','.join(index)
+            idx_str = f"CREATE INDEX idx_{index_name} ON {self.table_name}({index_cols})"
+            cur.execute(idx_str)
         self.indices_made = True
 
     def add(self, obj: Any):
