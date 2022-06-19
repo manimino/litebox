@@ -44,7 +44,7 @@ class SqliteIndex:
         # pyobj column needs an index to do fast updates / deletes
         cur = self.conn.cursor()
         for col in self.fields:
-            idx = f"CREATE INDEX idx_{col} ON {self.table_name}({col})"
+            idx = f"CREATE INDEX idx_{col} ON {self.table_name}(f0, f1)"
             cur.execute(idx)
         self.indices_made = True
 

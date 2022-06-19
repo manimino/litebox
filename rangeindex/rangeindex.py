@@ -4,7 +4,6 @@ from rangeindex.constants import *
 from rangeindex.exceptions import *
 from rangeindex.idx_pandas import PandasIndex
 from rangeindex.idx_sqlite import SqliteIndex
-from rangeindex.idx_duckdb import DuckDBIndex
 
 
 class RangeIndex:
@@ -20,11 +19,9 @@ class RangeIndex:
             self.idx = SqliteIndex(on)
         elif self.engine == PANDAS:
             self.idx = PandasIndex(on)
-        elif self.engine == DUCKDB:
-            self.idx = DuckDBIndex(on)
         else:
             raise InvalidEngineError(
-                f"Engine must be one of: '{DUCKDB}', '{SQLITE}', '{PANDAS}'"
+                f"Engine must be one of: '{SQLITE}', '{PANDAS}'"
             )
         if data is not None:
             self.add_many(data)

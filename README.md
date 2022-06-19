@@ -42,24 +42,19 @@ You can `add()`, `add_many()`, `update()`, and `remove()` items from your RangeI
 
 ### Engines
 
-RangeIndex has three engines available, `sqlite`, `duckdb`, and `pandas`. If not specified, it defaults to `pandas`.
+RangeIndex has two engines available, `sqlite`, `pandas`. If not specified, it defaults to `sqlite`.
 
 #### SQLite
 
 SQLite uses a B-tree index that dramatically speeds up small queries, as well as `update` and `remove` operations.
-However, it slows down to near linear speed or worse with large queries and large numbers of fields indexed. This index
-uses the most RAM and takes the longest to build.
-
-#### DuckDB
-
-DuckDB uses a [BRIN index](https://en.wikipedia.org/wiki/Block_Range_Index) that offers some speedups to small queries.
-It uses a medium amount of RAM, and the index builds reasonably fast. 
+However, it slows down to near linear speed or worse with large queries and large numbers of fields indexed. Uses
+significant RAM.
 
 #### Pandas
 
 Pandas does not use an index data structure; its performance gains over Python are due to its internal use of numpy 
-arrays, which allow vectorized operations. It will outperform by roughly 10x ~ 20x under all conditions. It uses a
-small amount of RAM and has the slowest `update` and `remove` operations.
+arrays, which allow vectorized operations. It will outperform by roughly 10x ~ 20x on float and int data, but
+underperforms on strings. It uses a small amount of RAM. Its `update` and `remove` operations are slower than SQLite.
 
 ### Performance
 
