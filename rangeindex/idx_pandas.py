@@ -9,14 +9,14 @@ PYTYPE_TO_PANDAS = {float: "float64", int: "int64", str: "O"}
 
 
 class PandasIndex:
-    def __init__(self, fields: Dict[str, type]):
-        self.fields = fields
+    def __init__(self, on: Dict[str, type], **kwargs):
+        self.fields = on
 
         # make empty dataframe
         self.df = pd.DataFrame(
             {
                 field: pd.Series(dtype=PYTYPE_TO_PANDAS[dtype])
-                for field, dtype in fields.items()
+                for field, dtype in self.fields.items()
             }
         )
         self.df[PYOBJ_ID_COL] = pd.Series(dtype="uint64")
@@ -60,30 +60,7 @@ class PandasIndex:
     def find(self, where: Union[str, Optional[List[Tuple]]] = None) -> List:
         if not where:
             return self.df[PYOBJ_COL].to_list()
-        if isinstance(where, str):
-            q_str = where
-        else:
-            q_str = self._tuples_to_query_str(where)
-        return self.df.query(q_str)[PYOBJ_COL].to_list()
-
-    def _tuples_to_query_str(self, where: Optional[List[Tuple]] = None) -> str:
-        q = []
-        for i, triplet in enumerate(where):
-            field, op, value = triplet
-
-            if value is None:
-                # field.isna() works inconsistently here.
-                # Best to use NaN logic instead.
-                if op.lower() == "is":
-                    q.append(f"{field} != {field}")
-                elif op.lower() == "is not":
-                    q.append(f"{field} == {field}")
-            else:
-                if self.fields[field] == str:
-                    q.append(f'{field} {op} "{value}"')
-                else:
-                    q.append(f"{field} {op} {value}")
-        return " and ".join(q)
+        return self.df.query(where)[PYOBJ_COL].to_list()
 
     def remove(self, obj: Any):
         i = self.df[self.df[PYOBJ_ID_COL] == id(obj)].index[0]
