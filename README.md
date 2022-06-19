@@ -71,4 +71,4 @@ Note that both axis labels are powers of 10; `10^3` on the Y-axis indicates a 10
 SQLite here offers a 15X ~ 1000X speedup when matching 1000 or fewer items, but it is about 3X slower than `linear` when 
 matching all objects. 
 
-Pandas is 5X ~ 20X faster than `linear` under all conditions.
+Pandas is 5X ~ 20X faster than `linear`.
