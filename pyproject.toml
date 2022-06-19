@@ -1,32 +1,30 @@
 [project]
-name = "infer_pyproject"
-version = "0.1.0"
+name = "rangeindex"
+version = "0.4.0"
 description = "Create a pyproject.toml file for an existing project."
 authors = [
-    "Martin Thoma <info@martin-thoma.de>"
+    { name = "Theo Walker", email = "manimino@gmail.com" }
 ]
-license = "MIT"
+license = {file = "LICENSE"}
 readme = "README.md"
-python = "^3.6"
-homepage = "https://github.com/MartinThoma/infer_pyproject"
-repository = "https://github.com/MartinThoma/infer_pyproject"
-documentation = "https://github.com/MartinThoma/infer_pyproject"
-
-keywords = ["packaging", "dependency", "infer", "pyproject.toml"]
-
+keywords = ["rangeindex", "objects", "index", "range index", "range", "sqlite", "pandas", "query"]
 classifiers = [
-    "Topic :: Software Development"
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+
+[tool.setuptools]
+py-modules = []
+
+[project.urls]
+repository = "https://github.com/manimino/rangeindex"
+documentation = "https://pypi.org/project/rangeindex/"
 
 # Requirements
 [dependencies]
-Click = "^7.0"
+pandas = "^1.0"
 
 [dev-dependencies]
 black = { version = "^18.3-alpha.0", python = "^3.6" }
-
-[scripts]
-poetry = "infer_pyproject.cli:main"
 
 [build-system]
 requires = [
