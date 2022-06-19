@@ -11,11 +11,11 @@ PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT"}
 
 
 class SqliteIndex:
-    def __init__(self, fields: Dict[str, type], indices: List[Tuple[str]] = None):
+    def __init__(self, on: Dict[str, type], indices: List[Tuple[str]] = None):
         self.objs = dict()  # maps {id(object): object}
         self.table_name = "ri_" + str(get_next_table_id())
         self.conn = sqlite3.connect(":memory:")
-        self.fields = fields
+        self.fields = on
 
         self.indices = indices
         if self.indices is None:
@@ -25,7 +25,7 @@ class SqliteIndex:
 
         # create sqlite table
         tbl = [f"CREATE TABLE {self.table_name} ("]
-        for field, pytype in fields.items():
+        for field, pytype in self.fields.items():
             s_type = PYTYPE_TO_SQLITE[pytype]
             tbl.append(f"{field} {s_type},")
         tbl.append(f"{PYOBJ_ID_COL} INTEGER")
@@ -118,12 +118,6 @@ class SqliteIndex:
         if not where:
             return list(self.objs.values())
 
-        if isinstance(where, str):
-            where_str = where
-            values = []
-        else:
-            where_str, values = self._tuples_to_query_str(where)
-
         """
         Optimization: SQLite will often try to use its indexes in scenarios where it shouldn't.
         This results in poor time performance on queries returning a large number of items.
@@ -137,37 +131,18 @@ class SqliteIndex:
         and makes the worst-case scenario much more palatable (improves benchmarks some 10x or so).
         """
         limit_int = int(len(self.objs) / log2(len(self.objs)+0.000001))
-        query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where_str} LIMIT {limit_int}"
+        query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where} LIMIT {limit_int}"
         cur = self.conn.cursor()
-        if values:
-            cur.execute(query, values)
-        else:
-            cur.execute(query)
+        cur.execute(query)
         ptrs = [r[0] for r in cur]
         if len(ptrs) < limit_int:
             return list(self.objs[ptr] for ptr in ptrs)
 
         # If we're here, we got too many rows -- this query would be best run
         # without an index. (speedup of ~5X or more for doing this).
-        query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} NOT INDEXED WHERE {where_str}"
-        if values:
-            cur.execute(query, values)
-        else:
-            cur.execute(query)
+        query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} NOT INDEXED WHERE {where}"
+        cur.execute(query)
         return list(self.objs[r[0]] for r in cur)
-
-    @staticmethod
-    def _tuples_to_query_str(where: Optional[List[Tuple]] = None) -> Tuple[str, List]:
-        q = []
-        values = []
-        for i, triplet in enumerate(where):
-            field, op, value = triplet
-            values.append(value)
-            if i < len(where) - 1:
-                q.append(f"{field} {op} ? AND")
-            else:
-                q.append(f"{field} {op} ?")
-        return "\n".join(q), values
 
     def __len__(self):
         return len(self.objs)
