@@ -123,8 +123,8 @@ The allowed types are `float`, `int`, `bool`, and `str`.
 `engine` is either `'sqlite'` or `'pandas'`, defaults to `sqlite`. Pandas is an optional dependency, so 
 `pip install pandas` if you want to use the `engine='pandas'`.
 
-If the engine is sqlite, you may optionally specify `table_index=Optional[List[Tuple[str]]]` in `kwargs`. This 
-controls the table index that SQLite uses when performing queries. If unspecified, a single-column index is made on each
+If the engine is sqlite, you may optionally specify `table_index`. This controls the table index that SQLite uses when 
+performing queries. If unspecified, a single-column index is made on each
 attribute. Example: `table_index=[('a', 'b', 'c'), ('d')]` will create a multi-column index on `(a, b, c)` and a 
 single-column index on `d`. Multi-column indexes will often speed up `find()` operations; see 
 [SQLite documentation](https://www.sqlite.org/queryplanner.html).
