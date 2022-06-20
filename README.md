@@ -15,8 +15,6 @@ matching_objects = ri.find('size >= 1000 and brightness > 0.5')
 
 You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
 
-[Docs here](https://pypi.org/project/rangeindex/)
-
 ### How it works
 
 `RangeIndex(list_of_objects, on={'size': int, 'brightness': float})`
@@ -101,3 +99,86 @@ fields. `Baseline` is a Python list comprehension.
 
 This is the same data in graph form, showing relative speedup. Each line is divided by `baseline`. 
 Note that both axis labels are powers of 10. So `10^3` on the Y-axis indicates a 1000X speedup.
+
+## Methods
+
+### Init
+
+```
+RangeIndex(
+        objs: Optional[Iterable[Any]] = None,
+        on: Optional[Dict[str, Any]] = None,
+        engine: str = SQLITE,
+        **kwargs
+)
+```
+
+Creates a RangeIndex.
+
+`objs` is optional. It can be any collection of `class`, `dataclass`, or `namedtuple` objects.
+
+`on` is the only required field. It specifies the attributes and types to index. 
+The allowed types are `float`, `int`, `bool`, and `str`.
+
+`engine` is either `'sqlite'` or `'pandas'`.
+
+If the engine is `sqlite`, you may optionally specify `table_index=Optional[List[Tuple[str]]]` in `kwargs`. This 
+controls the table index that SQLite uses when performing queries. If unspecified, a single-column index is made on each
+attribute. Example: `table_index=[('a', 'b', 'c'), ('d')]` will create a multi-column index on `(a, b, c)` and a 
+single-column index on `d`. Multi-column indexes will often speed up `find()` operations; see 
+[SQLite documentation](https://www.sqlite.org/queryplanner.html).
+
+### add(), add_many()
+
+```
+add(obj:Any)
+add_many(objs:Iterable[Any])
+```
+
+You can add a single object with `add()`. If you have many objects, it is much faster to `add_many()` than it is to
+call `add()` on each.
+
+If an added object is missing an attribute, the object will still be added. The missing attribute will be given a 
+null value in the index.
+
+### find()
+
+`find(where: Optional[str]) -> List` finds objects matching the query string in `where`.
+
+Examples: 
+ - `ri.find('b == True and string == "okay"')`
+ - `ri.find('(x == 0 and y >= 1000.0) or x == 9')`
+
+If `where` is unspecified, all objects in the RangeIndex are returned. 
+
+The syntax of `where` is nearly identical between pandas and sqlite. The only difference is in matching null 
+values. 
+ - In sqlite, use `find('x is null')` / `find('x is not null')`. 
+ - In pandas, use `find('x != x')` to match nulls, or `find('x == x')` for non-nulls. 
+
+Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html) or 
+[pandas queries](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html) as needed.
+
+### update()
+
+`update(self, obj: Any, updates: Dict[str, Any])` updates attributes of a single object in the index.
+
+`updates` is a dict containing the new values for each changed attribute, e.g. `{'x': 5.5, 'b': True}`.
+
+Updates will affect both the value in the RangeIndex table and the object's value.
+
+Update is very fast in SQLite, but slower in Pandas since finding is O(n) there.
+
+### remove()
+
+`remove(self, obj: Any)` removes an object. 
+
+Remove is very fast in SQLite, but slower in Pandas since object lookup is O(n) there. Pandas also needs to rebuild
+some data structures when an object is removed.
+
+### Container methods
+
+You can do the usual container things:
+ - Length: `len(ri)`
+ - Contains: `obj in ri`
+ - Iteration: `for obj in ri: ...`
