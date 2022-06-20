@@ -182,7 +182,7 @@ some data structures when an object is removed.
 
 ### Container methods
 
-You can do the usual container things:
+You can do the container things:
  - Length: `len(ri)`
  - Contains: `obj in ri`
  - Iteration: `for obj in ri: ...`

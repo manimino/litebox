@@ -116,7 +116,6 @@ class SqliteIndex:
         q = f"UPDATE {self.table_name} SET {set_str} WHERE {PYOBJ_ID_COL}=?"
         ptr = id(obj)
         set_values.append(ptr)
-        print(q, set_values)
         cur = self.conn.cursor()
         cur.execute(q, set_values)
         self.conn.commit()
