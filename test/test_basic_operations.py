@@ -13,13 +13,14 @@ class Thing:
     x: int
     y: float
     s: str
+    b: bool
 
 
 def make_thing():
     s = []
     for i in range(5):
         s.append(random.choice(az))
-    return Thing(x=random.choice(ten), y=random.random(), s="".join(s))
+    return Thing(x=random.choice(ten), y=random.random(), s="".join(s), b=random.choice([False, True]))
 
 
 def test_create_insert_find(engine):
@@ -57,35 +58,41 @@ def test_update(engine):
     assert objs == []
     objs = ri.find("x < 2")
     assert objs == [t]
+    assert t.x == 0  # check that the update was applied to the obj as well
 
 
 def test_find_equal(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = RangeIndex(on={"x": int, "y": float, "s": str, "b": bool}, engine=engine)
     t = make_thing()
     ri.add(t)
     int_result = ri.find(f"x == {t.x}")
     float_result = ri.find(f"y == {t.y}")
     str_result = ri.find(f"s == '{t.s}'")
+    bool_result = ri.find(f"b == {t.b}")
     assert [t] == int_result
     assert [t] == float_result
     assert [t] == str_result
+    assert [t] == bool_result
 
 
 def test_find_null(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str}, engine=engine)
-    t = Thing(x=None, y=None, s=None)
+    ri = RangeIndex(on={"x": int, "y": float, "s": str, "b": bool}, engine=engine)
+    t = Thing(x=None, y=None, s=None, b=None)
     ri.add(t)
     if engine == PANDAS:
         int_result = ri.find(f"x != x")
         float_result = ri.find(f"y != y")
         str_result = ri.find(f"s != s")
+        bool_result = ri.find(f"b != b")
     elif engine == SQLITE:
         int_result = ri.find(f"x is null")
         float_result = ri.find(f"y is null")
         str_result = ri.find(f"s is null")
+        bool_result = ri.find(f"b is null")
     assert [t] == int_result
     assert [t] == float_result
     assert [t] == str_result
+    assert [t] == bool_result
 
 
 def test_add_many(engine):
@@ -93,3 +100,31 @@ def test_add_many(engine):
     ri = RangeIndex(ten_things, on={"x": int, "y": float, "s": str}, engine=engine)
     found = ri.find()
     assert len(found) == len(ten_things)
+
+
+def test_parens_and_ors(engine):
+    things = [make_thing() for _ in range(10)]
+    for i, t in enumerate(things):
+        t.x = i
+    things[0].y = 1000
+    ri = RangeIndex(things, on={"x": int, "y": float, "s": str}, engine=engine)
+    found = ri.find('(x == 0 and y == 1000) or x == 9')
+    assert len(found) == 2
+
+
+def test_contains(engine):
+    things = [make_thing() for _ in range(5)]
+    ri = RangeIndex(things, on={'x': int})
+    assert all(t in ri for t in things)
+    t_not = make_thing()
+    assert t_not not in ri
+
+
+def test_iteration(engine):
+    things = [make_thing() for _ in range(5)]
+    ri = RangeIndex(things, on={"x": int, "y": float, "s": str}, engine=engine)
+    ls = []
+    for obj in ri:
+        ls.append(obj)
+    assert len(ls) == 5
+    assert all(obj in ls for obj in things)
