@@ -166,7 +166,10 @@ Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html)
 
 `updates` is a dict containing the new values for each changed attribute, e.g. `{'x': 5.5, 'b': True}`.
 
-Updates will affect both the value in the RangeIndex table and the object's value.
+If you change an indexed object's attributes without calling `update()`, the RangeIndex will be out of sync and
+return inaccurate results. 
+
+`update()` will changes both the value in the RangeIndex table and the object's value.
 
 Update is very fast in SQLite, but slower in Pandas since object lookup is O(n) there.
 
