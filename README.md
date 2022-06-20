@@ -17,12 +17,12 @@ You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeInde
 
 ### How it works
 
-`RangeIndex(list_of_objects, on={'size': int, 'brightness': float})`
+When you do: `RangeIndex(list_of_objects, on={'size': int, 'brightness': float})`
 
-Creates a table with 3 columns:
+A table is created with 3 columns:
  - size
  - brightness
- - a Python object reference
+ - Python object reference
 
 On `find()`, a query will run to find the matching objects.
 
@@ -63,7 +63,7 @@ t0 = time.time()
 matches = ri.find(
     "height > 1900 and width >= 1900 and brightness >= 9 and name='Tiger'"
 )
-matches
+print('Found', len(matches), 'matches.')
 ```
 
 In this case, RangeIndex `find()` is more than 10x faster than the equivalent Python expression:
@@ -77,7 +77,7 @@ RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sql
 If your queries typically return just a few results, use `engine='sqlite'`. But if you're doing full table 
 scans often, `engine='pandas'` will be faster. 
 
-#### Data
+#### Time Comparison
 
 |                | Baseline | Sqlite | Pandas |
 |----------------|----------|--------|--------|
@@ -117,12 +117,13 @@ Creates a RangeIndex.
 
 `objs` is optional. It can be any collection of `class`, `dataclass`, or `namedtuple` objects.
 
-`on` is the only required field. It specifies the attributes and types to index. 
+`on` is required. It specifies the attributes and types to index. 
 The allowed types are `float`, `int`, `bool`, and `str`.
 
-`engine` is either `'sqlite'` or `'pandas'`.
+`engine` is either `'sqlite'` or `'pandas'`, defaults to `sqlite`. Pandas is an optional dependency, so 
+`pip install pandas` if you want to use the `engine='pandas'`.
 
-If the engine is `sqlite`, you may optionally specify `table_index=Optional[List[Tuple[str]]]` in `kwargs`. This 
+If the engine is sqlite, you may optionally specify `table_index=Optional[List[Tuple[str]]]` in `kwargs`. This 
 controls the table index that SQLite uses when performing queries. If unspecified, a single-column index is made on each
 attribute. Example: `table_index=[('a', 'b', 'c'), ('d')]` will create a multi-column index on `(a, b, c)` and a 
 single-column index on `d`. Multi-column indexes will often speed up `find()` operations; see 
@@ -167,7 +168,7 @@ Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html)
 
 Updates will affect both the value in the RangeIndex table and the object's value.
 
-Update is very fast in SQLite, but slower in Pandas since finding is O(n) there.
+Update is very fast in SQLite, but slower in Pandas since object lookup is O(n) there.
 
 ### remove()
 
