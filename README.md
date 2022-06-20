@@ -2,7 +2,7 @@
 
 [![tests Actions Status](https://github.com/manimino/rangeindex/workflows/tests/badge.svg)](https://github.com/manimino/rangeindex/actions)
 
-Data structure for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
+Container for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
 
 `pip install rangeindex`
 
@@ -15,11 +15,13 @@ matching_objects = ri.find('size >= 1000 and brightness > 0.5')
 
 You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
 
-[Docs]()
+[Docs here](https://pypi.org/project/rangeindex/)
 
 ### How it works
 
-That RangeIndex object will contain a table with 3 columns:
+`RangeIndex(list_of_objects, on={'size': int, 'brightness': float})`
+
+Creates a table with 3 columns:
  - size
  - brightness
  - a Python object reference
@@ -35,25 +37,35 @@ import random
 import time
 from rangeindex import RangeIndex
 
+
 class CatPhoto:
     def __init__(self):
         self.width = random.choice(range(200, 2000))
         self.height = random.choice(range(200, 2000))
-        self.brightness = random.random()*10
-        self.name = random.choice(['Luna', 'Willow', 'Elvis', 'Nacho', 'Tiger'])
-        self.image_data = 'Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU='
+        self.brightness = random.random() * 10
+        self.name = random.choice(["Luna", "Willow", "Elvis", "Nacho", "Tiger"])
+        self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
+
 
 # Make a million
-photos = [CatPhoto() for _ in range(10**6)]
+photos = [CatPhoto() for _ in range(10 ** 6)]
 
 # Build RangeIndex
-ri = RangeIndex(photos, 
-                on={'height': int, 'width': int, 'brightness': float, 'name': str}, 
-                engine='sqlite',
-                table_index=[('width', 'height', 'brightness')])
-                
+ri = RangeIndex(
+    photos,
+    on={"height": int, "width": int, "brightness": float, "name": str},
+    engine="sqlite",
+    table_index=[("width", "height", "brightness")],
+)
+
 # Find matches
-matches = ri.find("height > 1900 and width >= 1900 and brightness >= 9 and name='Tiger'")
+import time
+
+t0 = time.time()
+matches = ri.find(
+    "height > 1900 and width >= 1900 and brightness >= 9 and name='Tiger'"
+)
+matches
 ```
 
 In this case, RangeIndex `find()` is more than 10x faster than the equivalent Python expression:
@@ -64,8 +76,8 @@ In this case, RangeIndex `find()` is more than 10x faster than the equivalent Py
 
 RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
 
-If your queries typically return just a few results, use `engine=sqlite`. But if you're doing full table 
-scans often, `engine=pandas` will be faster. 
+If your queries typically return just a few results, use `engine='sqlite'`. But if you're doing full table 
+scans often, `engine='pandas'` will be faster. 
 
 #### Data
 
@@ -88,4 +100,4 @@ fields. `Baseline` is a Python list comprehension.
 ![Benchmark: sqlite does well on small queries, other engines do better on large queries.](perf/benchmark.png)
 
 This is the same data in graph form, showing relative speedup. Each line is divided by `baseline`. 
-Note that both axis labels are powers of 10; `10^3` on the Y-axis indicates a 1000X speedup.
+Note that both axis labels are powers of 10. So `10^3` on the Y-axis indicates a 1000X speedup.
