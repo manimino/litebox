@@ -4,71 +4,86 @@ Data structure for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their
 
 `pip install rangeindex`
 
-Putting your objects in a RangeIndex will greatly accelerate lookup times. 
+### Usage
+```
+from rangeindex import RangeIndex
+ri = RangeIndex(list_of_objects, on={'size': int, 'brightness': float})
+matching_objects = ri.find('size >= 1000 and brightness > 0.5')
+```
 
-You can expect a speedup of 10x ~ 1000x, versus doing a linear scan in Python like
-`matches = [obj for obj in objects if obj.x > ...]`.
+You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
+
+[Docs]()
+
+### How it works
+
+That RangeIndex object will contain a table with 3 columns:
+ - size
+ - brightness
+ - a Python object reference
+
+On `find()`, a query will run to find the matching objects.
 
 ### Example
 
-Make a million objects, filter them on size and shape. 
+You have a million cat photos. Find big, bright pictures of Tiger The Cat.
 
 ```
 import random
+import time
 from rangeindex import RangeIndex
 
-# Define an object
-class Object:
+class CatPhoto:
     def __init__(self):
-        self.size = random.random()
-        self.shape = random.choice(['square', 'circle'])
-        self.other_data = 'aXQncyBhIHNlY3JldCB0byBldmVyeWJvZHk='
+        self.width = random.choice(range(200, 2000))
+        self.height = random.choice(range(200, 2000))
+        self.brightness = random.random()*10
+        self.name = random.choice(['Luna', 'Willow', 'Elvis', 'Nacho', 'Tiger'])
+        self.image_data = 'Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU='
 
-# Make a million of them
-objects = [Object() for _ in range(10**6)]
+# Make a million
+photos = [CatPhoto() for _ in range(10**6)]
 
-# Build an index on 'shape' and 'size' containing all objects
-ri = RangeIndex(objects, 
-                on={'size': float, 'shape': str}, 
-                engine='sqlite')
-
+# Build RangeIndex
+ri = RangeIndex(photos, 
+                on={'height': int, 'width': int, 'brightness': float, 'name': str}, 
+                engine='sqlite',
+                table_index=[('width', 'height', 'brightness')])
+                
 # Find matches
-matches = ri.find("size < 0.001 and shape == 'circle'")
+matches = ri.find("height > 1900 and width >= 1900 and brightness >= 9 and name='Tiger'")
 ```
 
-### Usage
+In this case, RangeIndex `find()` is more than 10x faster than the equivalent Python expression:
 
-You can `add()`, `add_many()`, `update()`, and `remove()` items.
+`matches = [p for p in photos if p.height >= 1900 and p.width >= 1900 and p.brightness >= 9 and p.name='Tiger']`
 
-[See docs for more details.](https://pypi.org/project/rangeindex/)
-
-### Engines
+### Engine Comparison
 
 RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
 
-#### SQLite
+If your queries typically return just a few results, use `engine=sqlite`. But if you're doing full table 
+scans often, `engine=pandas` will be faster. 
 
-SQLite uses a B-tree index that dramatically speeds up small queries, as well as `update` and `remove` operations.
-However, it slows down to near linear speed or worse with large queries. 
+#### Data
 
-#### Pandas
+|                | Baseline | Sqlite | Pandas |
+|----------------|----------|--------|--------|
+| Get 1 item     | 1.14s    | 0.9ms  | 41.7ms |
+| Get 10 items   | 1.10s    | 2.7ms  | 42.4ms |
+| Get 100 items  | 1.09s    | 9.6ms  | 42.5ms |
+| Get 1K items   | 1.20s    | 46.8ms | 48.9ms |
+| Get 10K items  | 1.30s    | 0.28s  | 83.6ms |
+| Get 100K items | 1.83s    | 2.16s  | 0.198s |
+| Get 1M items   | 2.61s    | 7.95s  | 0.431s |
+| Get 10M items  | 2.64s    | 8.11s  | 0.45s  |
 
-Pandas does not use an index data structure; its performance gains over Python are due to its internal use of numpy 
-arrays, which allow vectorized operations. It uses a small amount of RAM. Its `update` and `remove` operations are 
-slower than SQLite.
+This is a benchmark on random-range queries against a dataset of 10 million (10^7) objects indexed on two numeric 
+fields. `Baseline` is a Python list comprehension.
 
-### Performance
+#### Graph
 
 ![Benchmark: sqlite does well on small queries, other engines do better on large queries.](perf/benchmark.png)
 
-This is a benchmark on random-range queries against a dataset of 1 million (10^6) objects indexed on two `float` 
-fields.
-
-The dashed line `linear` is a Python generator expression. `sqlite` and `pandas` are compared to that line.
-
+This is the same data in graph form, showing relative speedup. Each line is divided by `baseline`. 
 Note that both axis labels are powers of 10; `10^3` on the Y-axis indicates a 1000X speedup.
-
-SQLite here offers a 15X ~ 1000X speedup when matching 1000 or fewer items, but it is about 3X slower than `linear` when 
-matching all objects. 
-
-Pandas is 5X ~ 20X faster than `linear`.

@@ -1,6 +1,6 @@
 from typing import *
 
-from rangeindex.constants import *
+from rangeindex.constants import SQLITE, PANDAS
 from rangeindex.exceptions import *
 from rangeindex.idx_pandas import PandasIndex
 from rangeindex.idx_sqlite import SqliteIndex
@@ -10,11 +10,10 @@ class RangeIndex:
     def __init__(
         self,
         objs: Optional[List[Any]] = None,
-        on: Dict[str, Any] = None,
+        on: Optional[Dict[str, Any]] = None,
         engine: str = SQLITE,
         **kwargs,
     ):
-        self._validate_fields(on)
         self.engine = engine.lower()
         if self.engine == SQLITE:
             self.idx = SqliteIndex(on=on, **kwargs)

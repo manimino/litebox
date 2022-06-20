@@ -11,17 +11,17 @@ PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT"}
 
 
 class SqliteIndex:
-    def __init__(self, on: Dict[str, type], indices: List[Tuple[str]] = None):
+    def __init__(self, on: Dict[str, type], table_index: List[Tuple[str]] = None):
         self.objs = dict()  # maps {id(object): object}
         self.table_name = "ri_" + str(get_next_table_id())
         self.conn = sqlite3.connect(":memory:")
         self.fields = on
 
-        self.indices = indices
-        if self.indices is None:
+        self.table_index = table_index
+        if self.table_index is None:
             # By default, create a single-column index on each field.
             # If you really want no indices whatsoever, specify indices=[].
-            self.indices = [(f,) for f in self.fields]
+            self.table_index = [(f,) for f in self.fields]
 
         # create sqlite table
         tbl = [f"CREATE TABLE {self.table_name} ("]
@@ -37,7 +37,7 @@ class SqliteIndex:
 
     def _create_indices(self):
         cur = self.conn.cursor()
-        for index in self.indices:
+        for index in self.table_index:
             index_name = "_".join(index)
             index_cols = ",".join(index)
             idx_str = (
