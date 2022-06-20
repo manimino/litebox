@@ -1,5 +1,7 @@
 # RangeIndex
 
+[![tests Actions Status](https://github.com/manimino/rangeindex/workflows/tests/badge.svg)](https://github.com/manimino/rangeindex/actions)
+
 Data structure for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
 
 `pip install rangeindex`
