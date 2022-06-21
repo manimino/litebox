@@ -4,6 +4,7 @@ from typing import List, Tuple, Dict, Any, Optional, Iterable
 import sqlite3
 
 from rangeindex.constants import *
+from rangeindex.exceptions import NotInIndexError
 from rangeindex.globals import get_next_table_id
 
 
@@ -11,7 +12,9 @@ PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT", bool: "NUMBER"}
 
 
 class SqliteIndex:
-    def __init__(self, on: Dict[str, type], table_index: Optional[List[Tuple[str]]] = None):
+    def __init__(
+        self, on: Dict[str, type], table_index: Optional[List[Tuple[str]]] = None
+    ):
         self.objs = dict()  # maps {id(object): object}
         self.table_name = "ri_" + str(get_next_table_id())
         self.conn = sqlite3.connect(":memory:")
@@ -30,7 +33,7 @@ class SqliteIndex:
             tbl.append(f"{field} {s_type},")
         tbl.append(f"{PYOBJ_ID_COL} INTEGER PRIMARY KEY")
         tbl.append(")")
-        tbl.append('WITHOUT ROWID')
+        tbl.append("WITHOUT ROWID")
         cur = self.conn.cursor()
         cur.execute("\n".join(tbl))
         # Deferring creation of indices until after data has been added is much faster.
@@ -98,6 +101,8 @@ class SqliteIndex:
     def remove(self, obj: Any):
         """Remove a single object from the index. Fast operation (<1ms usually)."""
         ptr = id(obj)
+        if ptr not in self.objs:
+            raise NotInIndexError(f"Could not find object with id: {ptr}")
         del self.objs[ptr]
         q = f"DELETE FROM {self.table_name} WHERE {PYOBJ_ID_COL}=?"
         cur = self.conn.cursor()
@@ -106,6 +111,9 @@ class SqliteIndex:
 
     def update(self, obj: Any, updates: Dict[str, Any]):
         """Update a single object in the index. Fast operation (<1ms usually)."""
+        ptr = id(obj)
+        if ptr not in self.objs:
+            raise NotInIndexError(f"Could not find object with id: {ptr}")
         set_cols = []
         set_values = []
         for attr, new_value in updates.items():
@@ -114,7 +122,6 @@ class SqliteIndex:
                 set_values.append(updates[attr])
         set_str = ",".join(set_cols)
         q = f"UPDATE {self.table_name} SET {set_str} WHERE {PYOBJ_ID_COL}=?"
-        ptr = id(obj)
         set_values.append(ptr)
         cur = self.conn.cursor()
         cur.execute(q, set_values)

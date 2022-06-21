@@ -20,7 +20,12 @@ def make_thing():
     s = []
     for i in range(5):
         s.append(random.choice(az))
-    return Thing(x=random.choice(ten), y=random.random(), s="".join(s), b=random.choice([False, True]))
+    return Thing(
+        x=random.choice(ten),
+        y=random.random(),
+        s="".join(s),
+        b=random.choice([False, True]),
+    )
 
 
 def test_create_insert_find(engine):
@@ -108,13 +113,13 @@ def test_parens_and_ors(engine):
         t.x = i
     things[0].y = 1000
     ri = RangeIndex(things, on={"x": int, "y": float, "s": str}, engine=engine)
-    found = ri.find('(x == 0 and y == 1000) or x == 9')
+    found = ri.find("(x == 0 and y == 1000) or x == 9")
     assert len(found) == 2
 
 
 def test_contains(engine):
     things = [make_thing() for _ in range(5)]
-    ri = RangeIndex(things, on={'x': int})
+    ri = RangeIndex(things, on={"x": int})
     assert all(t in ri for t in things)
     t_not = make_thing()
     assert t_not not in ri

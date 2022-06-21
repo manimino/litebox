@@ -1,3 +1,4 @@
+import unittest
 import random
 
 from dataclasses import dataclass
@@ -5,6 +6,7 @@ from collections import namedtuple
 
 from rangeindex import RangeIndex
 from rangeindex.constants import PANDAS, SQLITE
+from rangeindex.exceptions import NotInIndexError
 
 
 @dataclass
@@ -97,7 +99,7 @@ def test_update_many(engine):
     things = [Thing(x=1) for _ in range(10)]
     ri = RangeIndex(things, on={"x": int}, engine=engine)
     for i in range(5):
-        ri.update(things[i], {'x': 2})
+        ri.update(things[i], {"x": 2})
     assert len(ri.find("x == 1")) == 5
     assert len(ri.find("x == 2")) == 5
 
@@ -109,14 +111,28 @@ def test_remove_many(engine):
         ri.remove(things[i])
     assert len(ri) == 5
     assert all([t not in ri for t in things[:5]])
-    print('expected:', sorted([id(t) for t in things[5:]]))
+    print("expected:", sorted([id(t) for t in things[5:]]))
     assert all([t in ri for t in things[5:]])
 
 
 def test_empty(engine):
-    ri = RangeIndex(on={'x': int})
+    ri = RangeIndex(on={"x": int})
     assert ri not in ri
-    assert not ri.find('x == 3')
+    assert not ri.find("x == 3")
     for _ in ri:
         # should be empty, won't reach here
         assert False
+
+
+class TestExceptions(unittest.TestCase):
+    def test_update_missing_object(self):
+        for engine in [SQLITE, PANDAS]:
+            self.ri = RangeIndex(on={"x": int})
+            with self.assertRaises(NotInIndexError):
+                self.ri.update(self.ri, {"x": 100})
+
+    def test_remove_missing_object(self):
+        for engine in [SQLITE, PANDAS]:
+            self.ri = RangeIndex(on={"x": int})
+            with self.assertRaises(NotInIndexError):
+                self.ri.remove(self.ri)

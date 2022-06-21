@@ -8,3 +8,7 @@ class InvalidEngineError(Exception):
 
 class MissingPandasError(Exception):
     pass
+
+
+class NotInIndexError(Exception):
+    pass

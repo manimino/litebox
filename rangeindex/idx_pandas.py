@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from rangeindex.constants import *
+from rangeindex.exceptions import NotInIndexError
 
 
 PYTYPE_TO_PANDAS = {float: "float64", int: "int64", bool: "bool", str: "O"}
@@ -57,7 +58,7 @@ class PandasIndex:
                 for field, dtype in self.fields.items()
             }
         )
-        new_df[PYOBJ_ID_COL] = np.array(list(new_objs.keys()), dtype='uint64')
+        new_df[PYOBJ_ID_COL] = np.array(list(new_objs.keys()), dtype="uint64")
         new_df[PYOBJ_COL] = list(new_objs.values())
         self.df = pd.concat([self.df, new_df])
         self.df.sort_values(PYOBJ_ID_COL, inplace=True)
@@ -73,7 +74,7 @@ class PandasIndex:
         ptr = id(obj)
         i = self._find_idx(ptr)
         if i == -1:
-            raise KeyError(f'Could not find object with id: {ptr}')
+            raise NotInIndexError(f"Could not find object with id: {ptr}")
         else:
             self.df.drop(index=self.df.index[i], inplace=True)
 
@@ -82,7 +83,7 @@ class PandasIndex:
         ptr = id(obj)
         i = self._find_idx(ptr)
         if i == -1:
-            raise KeyError(f'Could not find object with id: {ptr}')
+            raise NotInIndexError(f"Could not find object with id: {ptr}")
         else:
             for field, new_value in updates.items():
                 if field in self.fields:
