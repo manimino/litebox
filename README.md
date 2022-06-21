@@ -171,14 +171,13 @@ return inaccurate results.
 
 `update()` will changes both the value in the RangeIndex table and the object's value.
 
-Update is very fast in SQLite, but slower in Pandas since object lookup is O(n) there.
+Update is fast, it's O(log n) in both sqlite and pandas.
 
 ### remove()
 
 `remove(self, obj: Any)` removes an object. 
 
-Remove is very fast in SQLite, but slower in Pandas since object lookup is O(n) there. Pandas also needs to rebuild
-some data structures when an object is removed.
+Remove is fast in SQLite but slower in Pandas. This is because removing an item requires rebuilding arrays there.
 
 ### Container methods
 
