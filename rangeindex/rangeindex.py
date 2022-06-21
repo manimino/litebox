@@ -19,11 +19,14 @@ class RangeIndex:
         if self.engine == SQLITE:
             self.idx = SqliteIndex(on=on, **kwargs)
         elif self.engine == PANDAS:
-            if importlib.util.find_spec('pandas'):
+            if importlib.util.find_spec("pandas"):
                 from rangeindex.idx_pandas import PandasIndex
+
                 self.idx = PandasIndex(on=on, **kwargs)
             else:
-                raise MissingPandasError('Pandas not installed, please pip install pandas to use this engine.')
+                raise MissingPandasError(
+                    "Pandas not installed, please pip install pandas to use this engine."
+                )
         else:
             raise InvalidEngineError(f"Engine must be one of: '{SQLITE}', '{PANDAS}'")
         if objs is not None:

@@ -79,18 +79,18 @@ scans often, `engine='pandas'` will be faster.
 
 #### Time Comparison
 
-|                | Baseline | Sqlite | Pandas |
-|----------------|----------|--------|--------|
-| Get 1 item     | 1.14s    | 0.9ms  | 41.7ms |
-| Get 10 items   | 1.10s    | 2.7ms  | 42.4ms |
-| Get 100 items  | 1.09s    | 9.6ms  | 42.5ms |
-| Get 1K items   | 1.20s    | 46.8ms | 48.9ms |
-| Get 10K items  | 1.30s    | 0.28s  | 83.6ms |
-| Get 100K items | 1.83s    | 2.16s  | 0.198s |
-| Get 1M items   | 2.61s    | 7.95s  | 0.431s |
-| Get 10M items  | 2.64s    | 8.11s  | 0.45s  |
+|                 | Baseline | Sqlite | Pandas |
+|-----------------|----------|--------|--------|
+| Find 1 item     | 0.9s     | 0.2ms  | 43.1ms |
+| Find 10 items   | 0.9s     | 0.7ms  | 44.9ms |
+| Find 100 items  | 1.0s     | 1.9ms  | 43.8ms |
+| Find 1K items   | 1.0s     | 6.7ms  | 43.9ms |
+| Find 10K items  | 1.1s     | 27.2ms | 47.6ms |
+| Find 100K items | 1.2s     | 0.18s  | 88.3ms |
+| Find 1M items   | 1.7s     | 1.37s  | 0.24s  |
+| Find 10M items  | 2.9s     | 10.6s  | 0.45s  |
 
-This is a benchmark on random-range queries against a dataset of 10 million (10^7) objects indexed on two numeric 
+This is a benchmark on random range queries against a dataset of 10 million (10^7) objects indexed on two numeric 
 fields. `Baseline` is a Python list comprehension.
 
 #### Graph
@@ -171,13 +171,14 @@ return inaccurate results.
 
 `update()` will changes both the value in the RangeIndex table and the object's value.
 
-Update is fast, it's O(log n) in both sqlite and pandas.
+Update is fast (less than 1 ms), it's O(log n) in both sqlite and pandas.
 
 ### remove()
 
 `remove(self, obj: Any)` removes an object. 
 
-Remove is fast in SQLite but slower in Pandas. This is because removing an item requires rebuilding arrays there.
+Remove is fast (less than 1ms) in SQLite but slower (tens of ms) in Pandas. 
+This is because removing an item requires rebuilding arrays there.
 
 ### Container methods
 
