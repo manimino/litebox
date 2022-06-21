@@ -138,16 +138,9 @@ class SqliteIndex:
         """
         Optimization: SQLite will often try to use its indexes in scenarios where it shouldn't.
         This results in poor time performance on queries returning a large number of items.
-        Bit o'theory here:
-         - Looking up k items by index takes O(k*log(n)) time by index.
-         - Scanning all items takes O(n) time.
-         - So we shouldn't use an index when O(n)/log(n) < O(k).
-        Since we don't know what k is until we do the query, we do one query using indices first, using a limit.
-        If it turns out that there are over n/log(n) matches, stop the query and retry without using indices.
-        In practice, there are surely deeper optimizations available, but this is a good-enough simple threshold
-        and makes the worst-case scenario much more palatable (improves benchmarks some 10x or so).
+        Benchmarking says we should cut this off at a bit above sqrt(n_objects).
         """
-        limit_int = int(len(self.objs) / log2(len(self.objs) + 0.000001))
+        limit_int = int(len(self.objs)**0.65)
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where} LIMIT {limit_int}"
         cur = self.conn.cursor()
         cur.execute(query)
