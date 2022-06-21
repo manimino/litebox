@@ -86,7 +86,7 @@ scans often, `engine='pandas'` will be faster.
 | Find 100 items  | 1.0s     | 1.9ms  | 43.8ms |
 | Find 1K items   | 1.0s     | 6.7ms  | 43.9ms |
 | Find 10K items  | 1.1s     | 27.2ms | 47.6ms |
-| Find 100K items | 1.2s     | 0.19s  | 88.3ms |
+| Find 100K items | 1.2s     | 0.18s  | 88.3ms |
 | Find 1M items   | 1.7s     | 1.37s  | 0.24s  |
 | Find 10M items  | 2.9s     | 10.6s  | 0.45s  |
 
