@@ -140,7 +140,7 @@ class SqliteIndex:
         This results in poor time performance on queries returning a large number of items.
         Benchmarking says we should cut this off at a bit above sqrt(n_objects).
         """
-        limit_int = int(len(self.objs)**0.65)
+        limit_int = int(len(self.objs) ** 0.65)
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where} LIMIT {limit_int}"
         cur = self.conn.cursor()
         cur.execute(query)
