@@ -57,9 +57,6 @@ ri = RangeIndex(
 )
 
 # Find matches
-import time
-
-t0 = time.time()
 matches = ri.find(
     "height > 1900 and width >= 1900 and brightness >= 9 and name='Tiger'"
 )
