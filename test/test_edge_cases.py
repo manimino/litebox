@@ -111,3 +111,12 @@ def test_remove_many(engine):
     assert all([t not in ri for t in things[:5]])
     print('expected:', sorted([id(t) for t in things[5:]]))
     assert all([t in ri for t in things[5:]])
+
+
+def test_empty(engine):
+    ri = RangeIndex(on={'x': int})
+    assert ri not in ri
+    assert not ri.find('x == 3')
+    for _ in ri:
+        # should be empty, won't reach here
+        assert False

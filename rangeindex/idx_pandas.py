@@ -98,6 +98,9 @@ class PandasIndex:
         Returns -1 if not found.
         """
         i = self.df[PYOBJ_ID_COL].searchsorted(ptr)
+        if i == len(self.df):
+            # happens when df is empty, or the ptr is bigger than any obj ptr we have
+            return -1
         pyobj_col_loc = self.df.columns.get_loc(PYOBJ_ID_COL)
         if self.df.iloc[i, pyobj_col_loc] == ptr:
             return i
