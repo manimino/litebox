@@ -1,4 +1,3 @@
-from math import log2
 from typing import List, Tuple, Dict, Any, Optional, Iterable
 
 import sqlite3
@@ -6,6 +5,7 @@ import sqlite3
 from rangeindex.constants import *
 from rangeindex.exceptions import NotInIndexError
 from rangeindex.globals import get_next_table_id
+from rangeindex.utils import get_field, set_field
 
 
 PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT", bool: "NUMBER"}
@@ -63,7 +63,7 @@ class SqliteIndex:
         q = f"INSERT INTO {self.table_name} ({col_str}) VALUES({value_str})"
 
         self.objs[ptr] = obj
-        values = [getattr(obj, c, None) for c in self.fields] + [ptr]
+        values = [get_field(obj, c) for c in self.fields] + [ptr]
         cur = self.conn.cursor()
         cur.execute(q, values)
         self.conn.commit()
@@ -88,7 +88,7 @@ class SqliteIndex:
 
         rows = []
         for ptr, obj in new_objs.items():
-            values = [getattr(obj, c, None) for c in self.fields] + [ptr]
+            values = [get_field(obj, c) for c in self.fields] + [ptr]
             rows.append(values)
 
         cur = self.conn.cursor()
@@ -128,7 +128,7 @@ class SqliteIndex:
         self.conn.commit()
         # apply changes to the obj as well
         for field, new_value in updates.items():
-            setattr(obj, field, new_value)
+            set_field(obj, field, new_value)
 
     def find(self, where: Optional[str] = None) -> List[Any]:
         """Find Python objects that match the query constraints."""

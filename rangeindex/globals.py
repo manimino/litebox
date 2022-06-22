@@ -5,3 +5,5 @@ def get_next_table_id():
     global table_id
     table_id += 1
     return table_id
+
+

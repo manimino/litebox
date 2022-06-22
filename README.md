@@ -122,7 +122,7 @@ RangeIndex(
 
 Creates a RangeIndex.
 
-`objs` is optional. It can be any container of `class`, `dataclass`, or `namedtuple` objects.
+`objs` is optional. It can be any container of `class`, `dataclass`, `dict`, or `namedtuple` objects.
 
 `on` is required. It specifies the attributes and types to index. 
 The allowed types are `float`, `int`, `bool`, and `str`.
