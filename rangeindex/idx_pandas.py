@@ -5,6 +5,7 @@ import pandas as pd
 
 from rangeindex.constants import *
 from rangeindex.exceptions import NotInIndexError
+from rangeindex.utils import get_field, set_field
 
 
 PYTYPE_TO_PANDAS = {float: "float64", int: "int64", bool: "bool", str: "O"}
@@ -30,7 +31,7 @@ class PandasIndex:
         if ptr in set(self.df[PYOBJ_ID_COL]):
             return
         new_df = pd.DataFrame(
-            {field: [getattr(obj, field, None)] for field, dtype in self.fields.items()}
+            {field: [get_field(obj, field)] for field, dtype in self.fields.items()}
         )
         new_df[PYOBJ_ID_COL] = [ptr]
         new_df[PYOBJ_COL] = [obj]
@@ -54,7 +55,7 @@ class PandasIndex:
         # This is recommended by the DuckDB docs, and is much faster than inserting with cursor.executemany().
         new_df = pd.DataFrame(
             {
-                field: [getattr(obj, field, None) for obj in new_objs.values()]
+                field: [get_field(obj, field) for obj in new_objs.values()]
                 for field, dtype in self.fields.items()
             }
         )
@@ -92,7 +93,7 @@ class PandasIndex:
                     series = self.df[field]
                     series.values[i] = new_value
                 # apply changes to the obj as well
-                setattr(obj, field, new_value)
+                set_field(obj, field, new_value)
 
     def _find_idx(self, ptr: int) -> int:
         """

@@ -1,8 +1,6 @@
 import unittest
-import random
 
 from dataclasses import dataclass
-from collections import namedtuple
 
 from rangeindex import RangeIndex
 from rangeindex.constants import PANDAS, SQLITE
@@ -25,15 +23,6 @@ def test_index_on_missing_attributes(engine):
     elif engine == SQLITE:
         found = ri.find("z is null")
     assert found == [t]
-
-
-def test_index_namedtuple(engine):
-    Point = namedtuple("Point", "x")
-    pt = Point(random.random())
-    ri = RangeIndex(on={"x": float, "y": float}, engine=engine)
-    ri.add(pt)
-    ls = ri.find("x <= 1")
-    assert ls == [pt]
 
 
 def test_multiple_rangeindex_instances(engine):
