@@ -6,6 +6,8 @@ Container for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their attr
 
 `pip install rangeindex`
 
+____
+
 ### Usage
 ```
 from rangeindex import RangeIndex
@@ -14,6 +16,8 @@ matching_objects = ri.find('size >= 1000 and brightness > 0.5')
 ```
 
 You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
+
+____
 
 ### How it works
 
@@ -25,6 +29,8 @@ A table is created with 3 columns:
  - Python object reference
 
 On `find()`, a query will run to find the matching objects.
+
+____
 
 ### Example
 
@@ -67,6 +73,8 @@ In this case, RangeIndex `find()` is more than 10x faster than the equivalent Py
 
 `matches = [p for p in photos if p.height >= 1900 and p.width >= 1900 and p.brightness >= 9 and p.name='Tiger']`
 
+____
+
 ### Engine Comparison
 
 RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
@@ -97,6 +105,8 @@ fields. `Baseline` is a Python list comprehension.
 This is the same data in graph form, showing relative speedup. Each line is divided by `baseline`. 
 Note that both axis labels are powers of 10. So `10^3` on the Y-axis indicates a 1000X speedup.
 
+____
+
 ## Methods
 
 ### Init
@@ -112,7 +122,7 @@ RangeIndex(
 
 Creates a RangeIndex.
 
-`objs` is optional. It can be any collection of `class`, `dataclass`, or `namedtuple` objects.
+`objs` is optional. It can be any container of `class`, `dataclass`, or `namedtuple` objects.
 
 `on` is required. It specifies the attributes and types to index. 
 The allowed types are `float`, `int`, `bool`, and `str`.
