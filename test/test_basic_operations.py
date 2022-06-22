@@ -147,20 +147,20 @@ def test_index_namedtuple(engine):
 
 
 def test_index_dict(engine):
-    d1 = {'a': 1, 'b': 2.2}
-    d2 = {'a': 0, 'b': 4.4}
+    d1 = {"a": 1, "b": 2.2}
+    d2 = {"a": 0, "b": 4.4}
     ds = [d1, d2]
-    ri = RangeIndex(ds, on={'a': int, 'b': float})
-    ls = ri.find('b == 4.4')
+    ri = RangeIndex(ds, on={"a": int, "b": float})
+    ls = ri.find("b == 4.4")
     assert ls == [d2]
 
 
 def test_update_dict(engine):
-    d1 = {'a': 1, 'b': 2.2}
-    d2 = {'a': 0, 'b': 4.4}
+    d1 = {"a": 1, "b": 2.2}
+    d2 = {"a": 0, "b": 4.4}
     ds = [d1, d2]
-    ri = RangeIndex(ds, on={'a': int, 'b': float})
-    ri.update(d2, {'b': 5.5})
-    ls = ri.find('b == 5.5')
+    ri = RangeIndex(ds, on={"a": int, "b": float})
+    ri.update(d2, {"b": 5.5})
+    ls = ri.find("b == 5.5")
     assert ls == [d2]
-    assert d2['b'] == 5.5
+    assert d2["b"] == 5.5
