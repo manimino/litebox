@@ -119,6 +119,3 @@ class PandasIndex:
 
     def __iter__(self):
         return iter(self.df[PYOBJ_COL])
-
-    def __next__(self):
-        return next(self.df[PYOBJ_COL])

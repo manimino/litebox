@@ -164,6 +164,3 @@ class SqliteIndex:
 
     def __iter__(self):
         return iter(self.objs.values())
-
-    def __next__(self):
-        return next(self.objs.values())

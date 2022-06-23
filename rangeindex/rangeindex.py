@@ -77,6 +77,3 @@ class RangeIndex:
 
     def __iter__(self):
         return iter(self.idx)
-
-    def __next__(self):
-        return next(self.idx)
