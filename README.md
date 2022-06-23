@@ -15,6 +15,8 @@ ri = RangeIndex(list_of_objects, on={'size': int, 'brightness': float})
 matching_objects = ri.find('size >= 1000 and brightness > 0.5')
 ```
 
+`list_of_objects` can be any container of `class`, `dataclass`, `namedtuple`, or `dict` objects.
+
 You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
 
 ____
