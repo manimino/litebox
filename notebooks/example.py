@@ -38,6 +38,7 @@ print(t_rangeindex)
 
 # Find list comprehension matches
 t0 = time.time()
+<<<<<<< HEAD
 lc_matches = [
     p
     for p in photos
@@ -56,3 +57,12 @@ print(
     f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
 )
 print(f"Speedup: {round(t_listcomp / t_rangeindex)}x")
+=======
+lc_matches = [p for p in photos if p.name == 'Tiger' and p.height >= 1900 and p.width >= 1900 and p.brightness >= 9.0]
+t_listcomp = time.time() - t0
+print(t_listcomp)
+
+print(f'RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds.')
+print(f'List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds.')
+print(f'Speedup: {round(t_listcomp / t_rangeindex)}x')
+>>>>>>> 79df7c9 (add perf tests, improve readme)

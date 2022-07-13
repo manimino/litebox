@@ -1,3 +1,4 @@
+import time
 from typing import List, Tuple, Dict, Any, Optional, Iterable
 
 import sqlite3
@@ -17,6 +18,7 @@ class SqliteIndex:
         self.objs = dict()  # maps {id(object): object}
         self.table_name = "ri_" + str(get_next_table_id())
         self.conn = sqlite3.connect(":memory:")
+        #self.conn = apsw.Connection(":memory:")
         self.fields = on
 
         self.table_index = table_index
@@ -64,6 +66,10 @@ class SqliteIndex:
         values = [get_field(obj, c) for c in self.fields] + [ptr]
         cur = self.conn.cursor()
         cur.execute(q, values)
+<<<<<<< HEAD
+=======
+        #self.conn.commit()
+>>>>>>> 79df7c9 (add perf tests, improve readme)
         if not self.indices_made:
             self._create_indices()
 
@@ -90,6 +96,10 @@ class SqliteIndex:
 
         cur = self.conn.cursor()
         cur.executemany(q, rows)
+<<<<<<< HEAD
+=======
+        #self.conn.commit()
+>>>>>>> 79df7c9 (add perf tests, improve readme)
         if not self.indices_made:
             self._create_indices()
         self.objs.update(new_objs)

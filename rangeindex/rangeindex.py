@@ -3,12 +3,16 @@ import importlib.util
 from typing import Optional, Dict, Iterable, Any, List
 
 from rangeindex.constants import SQLITE, PANDAS
+<<<<<<< HEAD
 from rangeindex.exceptions import (
     InvalidEngineError,
     InvalidFields,
     MissingPandasError,
     FieldsTypeError,
 )
+=======
+from rangeindex.exceptions import InvalidEngineError, InvalidFields, MissingPandasError, FieldsTypeError
+>>>>>>> 79df7c9 (add perf tests, improve readme)
 from rangeindex.idx_sqlite import SqliteIndex
 
 
@@ -22,6 +26,7 @@ class RangeIndex:
     ):
         self.engine = engine.lower()
         if on is None:
+<<<<<<< HEAD
             raise FieldsTypeError(
                 'Required argument: "on". Example: RangeIndex(on={"field": data_type})'
             )
@@ -29,6 +34,11 @@ class RangeIndex:
             raise FieldsTypeError(
                 'The argument "on" must be a dict. Example: RangeIndex(on={"field": data_type})'
             )
+=======
+            raise FieldsTypeError('Required argument: "on". Example: RangeIndex(on={"field": data_type})')
+        if not isinstance(on, dict):
+            raise FieldsTypeError('The argument "on" must be a dict. Example: RangeIndex(on={"field": data_type})')
+>>>>>>> 79df7c9 (add perf tests, improve readme)
         if self.engine == SQLITE:
             self.idx = SqliteIndex(on=on, **kwargs)
         elif self.engine == PANDAS:

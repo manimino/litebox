@@ -37,6 +37,7 @@ def test_perf():
 
     # Find list comprehension matches
     t0 = time.time()
+<<<<<<< HEAD
     lc_matches = [
         p
         for p in photos
@@ -60,3 +61,15 @@ def test_perf():
         t_listcomp < 1
     )  # normally ~50ms. If it's over 1s, the timings are off in general.
     assert t_build < 10  # normally builds in
+=======
+    lc_matches = [p for p in photos if p.name == 'Tiger' and p.height >= 1900 and p.width >= 1900 and p.brightness >= 9.0]
+    t_listcomp = time.time() - t0
+
+    print(f'RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds.')
+    print(f'List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds.')
+    assert len(ri_matches) == len(lc_matches)
+    assert len(ri_matches) > 0
+    assert (t_listcomp / t_rangeindex) > 10  # at least a 10x speedup
+    assert t_listcomp < 1  # normally ~50ms. If it's over 1s, the timings are off in general.
+    assert t_build < 10  # normally builds in
+>>>>>>> 79df7c9 (add perf tests, improve readme)
