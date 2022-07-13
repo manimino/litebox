@@ -1,6 +1,10 @@
 [tool.poetry]
 name = "rangeindex"
+<<<<<<< HEAD
 version = "0.9.6"
+=======
+version = "0.9.4"
+>>>>>>> f5f92a0 (bump release)
 description = ""
 authors = ["Theo Walker <theo.ca.walker@gmail.com>"]
 repository = "https://github.com/manimino/rangeindex/"
