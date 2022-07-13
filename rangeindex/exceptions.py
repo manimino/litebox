@@ -12,3 +12,7 @@ class MissingPandasError(Exception):
 
 class NotInIndexError(Exception):
     pass
+
+
+class FieldsTypeError(Exception):
+    pass

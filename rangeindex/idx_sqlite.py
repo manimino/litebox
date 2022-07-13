@@ -1,3 +1,4 @@
+import time
 from typing import List, Tuple, Dict, Any, Optional, Iterable
 
 import sqlite3
@@ -6,7 +7,6 @@ from rangeindex.constants import *
 from rangeindex.exceptions import NotInIndexError
 from rangeindex.globals import get_next_table_id
 from rangeindex.utils import get_field, set_field
-
 
 PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT", bool: "NUMBER"}
 
@@ -18,6 +18,7 @@ class SqliteIndex:
         self.objs = dict()  # maps {id(object): object}
         self.table_name = "ri_" + str(get_next_table_id())
         self.conn = sqlite3.connect(":memory:")
+        #self.conn = apsw.Connection(":memory:")
         self.fields = on
 
         self.table_index = table_index
@@ -33,7 +34,6 @@ class SqliteIndex:
             tbl.append(f"{field} {s_type},")
         tbl.append(f"{PYOBJ_ID_COL} INTEGER PRIMARY KEY")
         tbl.append(")")
-        tbl.append("WITHOUT ROWID")
         cur = self.conn.cursor()
         cur.execute("\n".join(tbl))
         # Deferring creation of indices until after data has been added is much faster.
@@ -66,7 +66,7 @@ class SqliteIndex:
         values = [get_field(obj, c) for c in self.fields] + [ptr]
         cur = self.conn.cursor()
         cur.execute(q, values)
-        self.conn.commit()
+        #self.conn.commit()
         if not self.indices_made:
             self._create_indices()
 
@@ -93,7 +93,7 @@ class SqliteIndex:
 
         cur = self.conn.cursor()
         cur.executemany(q, rows)
-        self.conn.commit()
+        #self.conn.commit()
         if not self.indices_made:
             self._create_indices()
         self.objs.update(new_objs)
@@ -140,13 +140,15 @@ class SqliteIndex:
         This results in poor time performance on queries returning a large number of items.
         Benchmarking says we should cut this off at a bit above sqrt(n_objects).
         """
+
         limit_int = int(len(self.objs) ** 0.65)
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where} LIMIT {limit_int}"
         cur = self.conn.cursor()
         cur.execute(query)
         ptrs = [r[0] for r in cur]
         if len(ptrs) < limit_int:
-            return list(self.objs[ptr] for ptr in ptrs)
+            objs = list(self.objs[ptr] for ptr in ptrs)
+            return objs
 
         # If we're here, we got too many rows. So this query would be best run
         # without an index.

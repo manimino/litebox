@@ -1,4 +1,4 @@
-name: tests
+name: performance
 on:
   push:
     branches:
@@ -23,4 +23,4 @@ jobs:
           pip install pandas
           pip install .
       - name: Run tests with pytest
-        run: pytest test/
+        run: pytest perf_test/
