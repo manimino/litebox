@@ -4,7 +4,12 @@ from dataclasses import dataclass
 
 from rangeindex import RangeIndex
 from rangeindex.constants import PANDAS, SQLITE
-from rangeindex.exceptions import NotInIndexError
+from rangeindex.exceptions import NotInIndexError, FieldsTypeError
+
+joe_and_jane = [
+    {"name": "Joe", "age": 16},
+    {"name": "Jane", "favourite_color": "red"},
+]
 
 
 @dataclass
@@ -116,12 +121,16 @@ def test_empty(engine):
 class TestExceptions(unittest.TestCase):
     def test_update_missing_object(self):
         for engine in [SQLITE, PANDAS]:
-            self.ri = RangeIndex(on={"x": int})
+            self.ri = RangeIndex(on={"x": int}, engine=engine)
             with self.assertRaises(NotInIndexError):
                 self.ri.update(self.ri, {"x": 100})
 
     def test_remove_missing_object(self):
         for engine in [SQLITE, PANDAS]:
-            self.ri = RangeIndex(on={"x": int})
+            self.ri = RangeIndex(on={"x": int}, engine=engine)
             with self.assertRaises(NotInIndexError):
                 self.ri.remove(self.ri)
+
+    def test_init_without_fields(self):
+        with self.assertRaises(FieldsTypeError):
+            RangeIndex(joe_and_jane)

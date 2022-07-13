@@ -1,6 +1,7 @@
 # RangeIndex
 
 [![tests Actions Status](https://github.com/manimino/rangeindex/workflows/tests/badge.svg)](https://github.com/manimino/rangeindex/actions)
+[![performance Actions Status](https://github.com/manimino/rangeindex/workflows/performance/badge.svg)](https://github.com/manimino/rangeindex/actions)
 
 Container for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
 
@@ -11,11 +12,13 @@ ____
 ### Usage
 ```
 from rangeindex import RangeIndex
-ri = RangeIndex(list_of_objects, on={'size': int, 'brightness': float})
-matching_objects = ri.find('size >= 1000 and brightness > 0.5')
+ri = RangeIndex(
+    [{'item': 1, 'size': 1000, 'shape': 'square'}],  # list of objects / dicts 
+    {'size': int, 'shape': str})                     # which fields to index on
+ri.find('size >= 1000 and shape == "square"')
 ```
 
-`list_of_objects` can be any container of `class`, `dataclass`, `namedtuple`, or `dict` objects.
+The objects can be any container of `class`, `dataclass`, `namedtuple`, or `dict` objects.
 
 You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
 
@@ -31,81 +34,6 @@ A table is created with 3 columns:
  - Python object reference
 
 On `find()`, a query will run to find the matching objects.
-
-____
-
-### Example
-
-You have a million cat photos. Find big, bright pictures of Tiger The Cat.
-
-```
-import random
-import time
-from rangeindex import RangeIndex
-
-
-class CatPhoto:
-    def __init__(self):
-        self.width = random.choice(range(200, 2000))
-        self.height = random.choice(range(200, 2000))
-        self.brightness = random.random() * 10
-        self.name = random.choice(["Luna", "Willow", "Elvis", "Nacho", "Tiger"])
-        self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
-
-
-# Make a million
-photos = [CatPhoto() for _ in range(10 ** 6)]
-
-# Build RangeIndex
-ri = RangeIndex(
-    photos,
-    on={"height": int, "width": int, "brightness": float, "name": str},
-    engine="sqlite",
-    table_index=[("width", "height", "brightness")],
-)
-
-# Find matches
-matches = ri.find(
-    "height > 1900 and width >= 1900 and brightness >= 9 and name='Tiger'"
-)
-print('Found', len(matches), 'matches.')
-```
-
-In this case, RangeIndex `find()` is more than 10x faster than the equivalent Python expression:
-
-`matches = [p for p in photos if p.height >= 1900 and p.width >= 1900 and p.brightness >= 9 and p.name='Tiger']`
-
-____
-
-### Engine Comparison
-
-RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
-
-If your queries typically return just a few results, use `engine='sqlite'`. But if you're doing full table 
-scans often, `engine='pandas'` will be faster. 
-
-#### Time Comparison
-
-|                 | Baseline | Sqlite | Pandas |
-|-----------------|----------|--------|--------|
-| Find 1 item     | 0.9s     | 0.2ms  | 43.1ms |
-| Find 10 items   | 0.9s     | 0.7ms  | 44.9ms |
-| Find 100 items  | 1.0s     | 1.9ms  | 43.8ms |
-| Find 1K items   | 1.0s     | 6.7ms  | 43.9ms |
-| Find 10K items  | 1.1s     | 27.2ms | 47.6ms |
-| Find 100K items | 1.2s     | 0.18s  | 88.3ms |
-| Find 1M items   | 1.7s     | 1.37s  | 0.24s  |
-| Find 10M items  | 2.9s     | 10.6s  | 0.45s  |
-
-This is a benchmark on random range queries against a dataset of 10 million (10^7) objects indexed on two numeric 
-fields. `Baseline` is a Python list comprehension.
-
-#### Graph
-
-![Benchmark: sqlite does well on small queries, other engines do better on large queries.](perf/benchmark.png)
-
-This is the same data in graph form, showing relative speedup. Each line is divided by `baseline`. 
-Note that both axis labels are powers of 10. So `10^3` on the Y-axis indicates a 1000X speedup.
 
 ____
 
@@ -161,11 +89,11 @@ Examples:
 
 If `where` is unspecified, all objects in the RangeIndex are returned. 
 
-The syntax of `where` is nearly identical between pandas and sqlite. The only difference is in matching null 
-values. 
+The syntax of `where` is nearly identical between pandas and sqlite. Exceptions:
  - In sqlite, use `find('x is null')` / `find('x is not null')`. 
  - In pandas, use `find('x != x')` to match nulls, or `find('x == x')` for non-nulls. 
-
+ - Sqlite accepts either `=` or `==` for equality; pandas accepts only `==`.
+ 
 Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html) or 
 [pandas queries](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html) as needed.
 
@@ -195,3 +123,124 @@ You can do the container things:
  - Length: `len(ri)`
  - Contains: `obj in ri`
  - Iteration: `for obj in ri: ...`
+
+____
+
+## Performance
+
+### Engine Comparison
+
+RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
+
+If your queries typically return just a few results, use `engine='sqlite'`. But if you're doing full table 
+scans often, `engine='pandas'` will be faster. 
+
+#### Time Comparison
+
+|                 | Baseline | Sqlite | Pandas |
+|-----------------|----------|--------|--------|
+| Find 1 item     | 0.9s     | 0.2ms  | 43.1ms |
+| Find 10 items   | 0.9s     | 0.7ms  | 44.9ms |
+| Find 100 items  | 1.0s     | 1.9ms  | 43.8ms |
+| Find 1K items   | 1.0s     | 6.7ms  | 43.9ms |
+| Find 10K items  | 1.1s     | 27.2ms | 47.6ms |
+| Find 100K items | 1.2s     | 0.18s  | 88.3ms |
+| Find 1M items   | 1.7s     | 1.37s  | 0.24s  |
+| Find 10M items  | 2.9s     | 10.6s  | 0.45s  |
+
+This is a benchmark on random range queries against a dataset of 10 million (10^7) objects indexed on two numeric 
+fields. `Baseline` is a Python list comprehension.
+
+#### Graph
+
+![Benchmark: sqlite does well on small queries, other engines do better on large queries.](notebooks/benchmark.png)
+
+This is the same data in graph form, showing relative speedup. Each line is divided by `baseline`. 
+Note that both axis labels are powers of 10. So `10^3` on the Y-axis indicates a 1000X speedup.
+
+____
+
+## Performance Examples
+
+### SQLite engine, multi-column index
+
+You have a million cat photos. Find big, bright pictures of Tiger the Cat.
+
+```
+import random
+import time
+from rangeindex import RangeIndex
+
+
+class CatPhoto:
+    def __init__(self):
+        self.name = random.choice(["Luna", "Willow", "Elvis", "Nacho", "Tiger"])
+        self.width = random.choice(range(200, 2000))
+        self.height = random.choice(range(200, 2000))
+        self.brightness = random.random() * 10
+        self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
+
+
+random.seed(42)
+
+# Make a million
+photos = [CatPhoto() for _ in range(10 ** 6)]
+
+# Build RangeIndex
+
+t0 = time.time()
+ri = RangeIndex(
+    photos,
+    on={"height": int, "width": int, "brightness": float, "name": str},
+    engine="sqlite",
+    table_index=[("width", "height", "brightness")],
+)
+t_build = time.time() - t0
+
+# Find RangeIndex matches
+t0 = time.time()
+ri_matches = ri.find(
+    "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
+)
+t_rangeindex = time.time() - t0
+print(t_rangeindex)
+
+# Find list comprehension matches
+t0 = time.time()
+lc_matches = [p for p in photos if p.name == 'Tiger' and p.height >= 1900 and p.width >= 1900 and p.brightness >= 9.0]
+t_listcomp = time.time() - t0
+print(t_listcomp)
+
+print(f'RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds.')
+print(f'List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds.')
+print(f'Speedup: {round(t_listcomp / t_rangeindex)}x')
+```
+
+RangeIndex returns the same matches about 20x faster in this case (60ms vs 3ms).
+
+### Pandas engine
+
+```
+import random
+import time
+
+from rangeindex import RangeIndex
+
+
+random.seed(42)
+data = [{'item': i, 'num': random.random()} for i in range(10**6)]
+ri = RangeIndex(data, {'num': float})
+t0 = time.time()
+ri_matches = ri.find('num <= 0.001')
+t_rangeindex = time.time() - t0
+
+t0 = time.time()
+lc_matches = [d for d in data if d['num'] <= 0.001]
+t_listcomp = time.time() - t0
+
+print(f'RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds.')
+print(f'List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds.')
+print(f'Speedup: {round(t_listcomp / t_rangeindex)}x')
+```
+
+RangeIndex outperforms by around 45x here (45ms vs 1ms).
