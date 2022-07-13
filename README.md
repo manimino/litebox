@@ -52,13 +52,10 @@ RangeIndex(
 
 Creates a RangeIndex.
 
-`objs` is optional. It can be any container of `class`, `dataclass`, `dict`, or `namedtuple` objects.
-
-`on` is required. It specifies the attributes and types to index. 
-The allowed types are `float`, `int`, `bool`, and `str`.
-
-`engine` is either `'sqlite'` or `'pandas'`, defaults to `sqlite`. Pandas is an optional dependency, so 
-`pip install pandas` if you want to use the `engine='pandas'`.
+ - `objs` is optional. It can be any container of class, dataclass, dict, or namedtuple objects.
+ - `on` is required. It specifies the attributes and types to index. The allowed types are float, int, bool, and str.
+ - `engine` is either 'sqlite' or 'pandas', defaults to sqlite. Pandas is an optional dependency; you only need to
+install pandas if using that engine.
 
 If the engine is sqlite, you may optionally specify `table_index`. This controls the table index that SQLite uses when 
 performing queries. If unspecified, a single-column index is made on each
