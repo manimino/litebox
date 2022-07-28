@@ -3,9 +3,9 @@ from typing import *
 import numpy as np
 import pandas as pd
 
-from rangeindex.constants import *
-from rangeindex.exceptions import NotInIndexError
-from rangeindex.utils import get_field, set_field
+from tabulated.constants import *
+from tabulated.exceptions import NotInIndexError
+from tabulated.utils import get_field, set_field
 
 
 PYTYPE_TO_PANDAS = {float: "float64", int: "int64", bool: "bool", str: "O"}

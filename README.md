@@ -1,18 +1,18 @@
-# RangeIndex
+# Tabulated
 
-[![tests Actions Status](https://github.com/manimino/rangeindex/workflows/tests/badge.svg)](https://github.com/manimino/rangeindex/actions)
-[![performance Actions Status](https://github.com/manimino/rangeindex/workflows/performance/badge.svg)](https://github.com/manimino/rangeindex/actions)
+[![tests Actions Status](https://github.com/manimino/tabulated/workflows/tests/badge.svg)](https://github.com/manimino/tabulated/actions)
+[![performance Actions Status](https://github.com/manimino/tabulated/workflows/performance/badge.svg)](https://github.com/manimino/tabulated/actions)
 
 Container for finding Python objects by `<`, `<=`, `==`, `>=`, `>` on their attributes.
 
-`pip install rangeindex`
+`pip install tabulated`
 
 ____
 
 ### Usage
 ```
-from rangeindex import RangeIndex
-ri = RangeIndex(
+from tabulated import Tabulated
+ri = Tabulated(
     [{'item': 1, 'size': 1000, 'shape': 'square'}],  # list of objects / dicts 
     {'size': int, 'shape': str})                     # which fields to index on
 ri.find('size >= 1000 and shape == "square"')
@@ -20,13 +20,13 @@ ri.find('size >= 1000 and shape == "square"')
 
 The objects can be any container of `class`, `dataclass`, `namedtuple`, or `dict` objects.
 
-You can `add()`, `add_many()`, `update()`, and `remove()` items from a RangeIndex.
+You can `add()`, `add_many()`, `update()`, and `remove()` items from a Tabulated.
 
 ____
 
 ### How it works
 
-When you do: `RangeIndex(list_of_objects, on={'size': int, 'brightness': float})`
+When you do: `Tabulated(list_of_objects, on={'size': int, 'brightness': float})`
 
 A table is created with 3 columns:
  - size
@@ -42,7 +42,7 @@ ____
 ### Init
 
 ```
-RangeIndex(
+Tabulated(
         objs: Optional[Iterable[Any]] = None,
         on: Optional[Dict[str, Any]] = None,
         engine: str = SQLITE,
@@ -50,7 +50,7 @@ RangeIndex(
 )
 ```
 
-Creates a RangeIndex.
+Creates a Tabulated.
 
  - `objs` is optional. It can be any container of class, dataclass, dict, or namedtuple objects.
  - `on` is required. It specifies the attributes and types to index. The allowed types are float, int, bool, and str.
@@ -84,7 +84,7 @@ Examples:
  - `ri.find('b == True and string == "okay"')`
  - `ri.find('(x == 0 and y >= 1000.0) or x == 9')`
 
-If `where` is unspecified, all objects in the RangeIndex are returned. 
+If `where` is unspecified, all objects in the Tabulated are returned. 
 
 The syntax of `where` is nearly identical between pandas and sqlite. Exceptions:
  - In sqlite, use `find('x is null')` / `find('x is not null')`. 
@@ -100,10 +100,10 @@ Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html)
 
 `updates` is a dict containing the new values for each changed attribute, e.g. `{'x': 5.5, 'b': True}`.
 
-If you change an indexed object's attributes without calling `update()`, the RangeIndex will be out of sync and
+If you change an indexed object's attributes without calling `update()`, the Tabulated will be out of sync and
 return inaccurate results. 
 
-`update()` will changes both the value in the RangeIndex table and the object's value.
+`update()` will changes both the value in the Tabulated table and the object's value.
 
 Update is fast (less than 1 ms), it's O(log n) in both sqlite and pandas.
 
@@ -127,7 +127,7 @@ ____
 
 ### Engine Comparison
 
-RangeIndex has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
+Tabulated has two engines available, `sqlite` and `pandas`. The default is `sqlite`.
 
 If your queries typically return just a few results, use `engine='sqlite'`. But if you're doing full table 
 scans often, `engine='pandas'` will be faster. 
@@ -166,7 +166,7 @@ You have a million cat photos. Find big, bright pictures of Tiger the Cat.
 ```
 import random
 import time
-from rangeindex import RangeIndex
+from tabulated import Tabulated
 
 
 class CatPhoto:
@@ -183,10 +183,10 @@ random.seed(42)
 # Make a million
 photos = [CatPhoto() for _ in range(10 ** 6)]
 
-# Build RangeIndex
+# Build Tabulated
 
 t0 = time.time()
-ri = RangeIndex(
+ri = Tabulated(
     photos,
     on={"height": int, "width": int, "brightness": float, "name": str},
     engine="sqlite",
@@ -194,13 +194,13 @@ ri = RangeIndex(
 )
 t_build = time.time() - t0
 
-# Find RangeIndex matches
+# Find Tabulated matches
 t0 = time.time()
 ri_matches = ri.find(
     "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
 )
-t_rangeindex = time.time() - t0
-print(t_rangeindex)
+t_tabulated = time.time() - t0
+print(t_tabulated)
 
 # Find list comprehension matches
 t0 = time.time()
@@ -208,12 +208,12 @@ lc_matches = [p for p in photos if p.name == 'Tiger' and p.height >= 1900 and p.
 t_listcomp = time.time() - t0
 print(t_listcomp)
 
-print(f'RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds.')
+print(f'Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds.')
 print(f'List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds.')
-print(f'Speedup: {round(t_listcomp / t_rangeindex)}x')
+print(f'Speedup: {round(t_listcomp / t_tabulated)}x')
 ```
 
-RangeIndex returns the same matches about 20x faster in this case (60ms vs 3ms).
+Tabulated returns the same matches about 20x faster in this case (60ms vs 3ms).
 
 ### Pandas engine
 
@@ -221,23 +221,23 @@ RangeIndex returns the same matches about 20x faster in this case (60ms vs 3ms).
 import random
 import time
 
-from rangeindex import RangeIndex
+from tabulated import Tabulated
 
 
 random.seed(42)
 data = [{'item': i, 'num': random.random()} for i in range(10**6)]
-ri = RangeIndex(data, {'num': float})
+ri = Tabulated(data, {'num': float})
 t0 = time.time()
 ri_matches = ri.find('num <= 0.001')
-t_rangeindex = time.time() - t0
+t_tabulated = time.time() - t0
 
 t0 = time.time()
 lc_matches = [d for d in data if d['num'] <= 0.001]
 t_listcomp = time.time() - t0
 
-print(f'RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds.')
+print(f'Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds.')
 print(f'List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds.')
-print(f'Speedup: {round(t_listcomp / t_rangeindex)}x')
+print(f'Speedup: {round(t_listcomp / t_tabulated)}x')
 ```
 
-RangeIndex outperforms by around 45x here (45ms vs 1ms).
+Tabulated outperforms by around 45x here (45ms vs 1ms).
