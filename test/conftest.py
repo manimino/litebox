@@ -1,6 +1,6 @@
 import pytest
 
-from rangeindex.constants import SQLITE, PANDAS
+from tabulated.constants import SQLITE, PANDAS
 
 
 @pytest.fixture(params=[SQLITE, PANDAS])

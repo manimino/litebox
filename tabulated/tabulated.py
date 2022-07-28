@@ -2,17 +2,17 @@ import importlib.util
 
 from typing import Optional, Dict, Iterable, Any, List
 
-from rangeindex.constants import SQLITE, PANDAS
-from rangeindex.exceptions import (
+from tabulated.constants import SQLITE, PANDAS
+from tabulated.exceptions import (
     InvalidEngineError,
     InvalidFields,
     MissingPandasError,
     FieldsTypeError,
 )
-from rangeindex.idx_sqlite import SqliteIndex
+from tabulated.idx_sqlite import SqliteIndex
 
 
-class RangeIndex:
+class Tabulated:
     def __init__(
         self,
         objs: Optional[Iterable[Any]] = None,
@@ -23,17 +23,17 @@ class RangeIndex:
         self.engine = engine.lower()
         if on is None:
             raise FieldsTypeError(
-                'Required argument: "on". Example: RangeIndex(on={"field": data_type})'
+                'Required argument: "on". Example: Tabulated(on={"field": data_type})'
             )
         if not isinstance(on, dict):
             raise FieldsTypeError(
-                'The argument "on" must be a dict. Example: RangeIndex(on={"field": data_type})'
+                'The argument "on" must be a dict. Example: Tabulated(on={"field": data_type})'
             )
         if self.engine == SQLITE:
             self.idx = SqliteIndex(on=on, **kwargs)
         elif self.engine == PANDAS:
             if importlib.util.find_spec("pandas"):
-                from rangeindex.idx_pandas import PandasIndex
+                from tabulated.idx_pandas import PandasIndex
 
                 self.idx = PandasIndex(on=on, **kwargs)
             else:

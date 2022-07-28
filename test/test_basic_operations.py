@@ -2,8 +2,8 @@ import random
 
 from collections import namedtuple
 from dataclasses import dataclass
-from rangeindex import RangeIndex
-from rangeindex.constants import PANDAS, SQLITE
+from tabulated import Tabulated
+from tabulated.constants import PANDAS, SQLITE
 
 
 az = "qwertyuiopasdfghjklzxcvbnm"
@@ -31,7 +31,7 @@ def make_thing():
 
 
 def test_create_insert_find(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = Tabulated(on={"x": int, "y": float, "s": str}, engine=engine)
     obj_to_find = make_thing()
     obj_to_find.x = 8
     not_this_one = make_thing()
@@ -43,7 +43,7 @@ def test_create_insert_find(engine):
 
 
 def test_delete(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = Tabulated(on={"x": int, "y": float, "s": str}, engine=engine)
     t = make_thing()
     ri.add(t)
     found_objs = ri.find()
@@ -54,7 +54,7 @@ def test_delete(engine):
 
 
 def test_update(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = Tabulated(on={"x": int, "y": float, "s": str}, engine=engine)
     t = make_thing()
     t.x = 2
     ri.add(t)
@@ -69,7 +69,7 @@ def test_update(engine):
 
 
 def test_find_equal(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str, "b": bool}, engine=engine)
+    ri = Tabulated(on={"x": int, "y": float, "s": str, "b": bool}, engine=engine)
     t = make_thing()
     ri.add(t)
     int_result = ri.find(f"x == {t.x}")
@@ -83,7 +83,7 @@ def test_find_equal(engine):
 
 
 def test_find_null(engine):
-    ri = RangeIndex(on={"x": int, "y": float, "s": str, "b": bool}, engine=engine)
+    ri = Tabulated(on={"x": int, "y": float, "s": str, "b": bool}, engine=engine)
     t = Thing(x=None, y=None, s=None, b=None)
     ri.add(t)
     if engine == PANDAS:
@@ -104,7 +104,7 @@ def test_find_null(engine):
 
 def test_add_many(engine):
     ten_things = [make_thing() for _ in range(10)]
-    ri = RangeIndex(ten_things, on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = Tabulated(ten_things, on={"x": int, "y": float, "s": str}, engine=engine)
     found = ri.find()
     assert len(found) == len(ten_things)
 
@@ -114,14 +114,14 @@ def test_parens_and_ors(engine):
     for i, t in enumerate(things):
         t.x = i
     things[0].y = 1000
-    ri = RangeIndex(things, on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = Tabulated(things, on={"x": int, "y": float, "s": str}, engine=engine)
     found = ri.find("(x == 0 and y == 1000) or x == 9")
     assert len(found) == 2
 
 
 def test_contains(engine):
     things = [make_thing() for _ in range(5)]
-    ri = RangeIndex(things, on={"x": int})
+    ri = Tabulated(things, on={"x": int})
     assert all(t in ri for t in things)
     t_not = make_thing()
     assert t_not not in ri
@@ -129,7 +129,7 @@ def test_contains(engine):
 
 def test_iteration(engine):
     things = [make_thing() for _ in range(5)]
-    ri = RangeIndex(things, on={"x": int, "y": float, "s": str}, engine=engine)
+    ri = Tabulated(things, on={"x": int, "y": float, "s": str}, engine=engine)
     ls = []
     for obj in ri:
         ls.append(obj)
@@ -140,7 +140,7 @@ def test_iteration(engine):
 def test_index_namedtuple(engine):
     Point = namedtuple("Point", "x")
     pt = Point(random.random())
-    ri = RangeIndex(on={"x": float, "y": float}, engine=engine)
+    ri = Tabulated(on={"x": float, "y": float}, engine=engine)
     ri.add(pt)
     ls = ri.find("x <= 1")
     assert ls == [pt]
@@ -150,7 +150,7 @@ def test_index_dict(engine):
     d1 = {"a": 1, "b": 2.2}
     d2 = {"a": 0, "b": 4.4}
     ds = [d1, d2]
-    ri = RangeIndex(ds, on={"a": int, "b": float})
+    ri = Tabulated(ds, on={"a": int, "b": float})
     ls = ri.find("b == 4.4")
     assert ls == [d2]
 
@@ -159,7 +159,7 @@ def test_update_dict(engine):
     d1 = {"a": 1, "b": 2.2}
     d2 = {"a": 0, "b": 4.4}
     ds = [d1, d2]
-    ri = RangeIndex(ds, on={"a": int, "b": float})
+    ri = Tabulated(ds, on={"a": int, "b": float})
     ri.update(d2, {"b": 5.5})
     ls = ri.find("b == 5.5")
     assert ls == [d2]

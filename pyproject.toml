@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "rangeindex"
-version = "0.9.6"
+name = "tabulated"
+version = "0.1.0"
 description = ""
 authors = ["Theo Walker <theo.ca.walker@gmail.com>"]
-repository = "https://github.com/manimino/rangeindex/"
-documentation = "https://pypi.org/project/rangeindex/"
+repository = "https://github.com/manimino/tabulated/"
+documentation = "https://pypi.org/project/tabulated/"
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -34,7 +34,7 @@ exclude = '''
     | \.hg
     | \.ipynb_checkpoints
     | \.pytest_cache
-    | \.rangeindex.egg-info
+    | \.tabulated.egg-info
     | \.venv
     | _build
     | buck-out

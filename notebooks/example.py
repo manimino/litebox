@@ -1,6 +1,6 @@
 import random
 import time
-from rangeindex import RangeIndex
+from tabulated import Tabulated
 
 
 class CatPhoto:
@@ -17,10 +17,10 @@ random.seed(42)
 # Make a million
 photos = [CatPhoto() for _ in range(10 ** 6)]
 
-# Build RangeIndex
+# Build Tabulated
 
 t0 = time.time()
-ri = RangeIndex(
+ri = Tabulated(
     photos,
     on={"height": int, "width": int, "brightness": float, "name": str},
     engine="sqlite",
@@ -28,13 +28,13 @@ ri = RangeIndex(
 )
 t_build = time.time() - t0
 
-# Find RangeIndex matches
+# Find Tabulated matches
 t0 = time.time()
 ri_matches = ri.find(
     "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
 )
-t_rangeindex = time.time() - t0
-print(t_rangeindex)
+t_tabulated = time.time() - t0
+print(t_tabulated)
 
 # Find list comprehension matches
 t0 = time.time()
@@ -50,9 +50,9 @@ t_listcomp = time.time() - t0
 print(t_listcomp)
 
 print(
-    f"RangeIndex found {len(ri_matches)} matches in {round(t_rangeindex, 6)} seconds."
+    f"Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds."
 )
 print(
     f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
 )
-print(f"Speedup: {round(t_listcomp / t_rangeindex)}x")
+print(f"Speedup: {round(t_listcomp / t_tabulated)}x")

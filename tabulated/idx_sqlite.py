@@ -2,10 +2,10 @@ from typing import List, Tuple, Dict, Any, Optional, Iterable
 
 import sqlite3
 
-from rangeindex.constants import *
-from rangeindex.exceptions import NotInIndexError
-from rangeindex.globals import get_next_table_id
-from rangeindex.utils import get_field, set_field
+from tabulated.constants import *
+from tabulated.exceptions import NotInIndexError
+from tabulated.globals import get_next_table_id
+from tabulated.utils import get_field, set_field
 
 PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT", bool: "NUMBER"}
 
