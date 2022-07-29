@@ -12,7 +12,7 @@ class CatPhoto:
         self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
 
 
-def test_perf():
+def test_sqlite():
     random.seed(42)
 
     # Make a million
@@ -59,3 +59,6 @@ def test_perf():
         t_listcomp < 1
     )  # normally ~50ms. If it's over 1s, the timings are off in general.
     assert t_build < 10  # normally builds in
+
+if __name__ == '__main__':
+    test_sqlite()
