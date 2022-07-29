@@ -1,10 +1,10 @@
 import pytest
 
-from tabulated.sqlite_table import SqliteTable
-from tabulated.pandas_table import PandasTable
+from tabulated.sqlite_table import LiteBox
+from tabulated.pandas_table import PandasBox
 
 
-@pytest.fixture(params=[SqliteTable, PandasTable])
+@pytest.fixture(params=[LiteBox, PandasBox])
 def table_class(request):
     return request.param
 
@@ -24,4 +24,3 @@ class AssertRaises:
     def __exit__(self, exception_type, exception_value, exception_traceback):
         assert exception_type == self.exc_type
         return True  # suppress the exception
-

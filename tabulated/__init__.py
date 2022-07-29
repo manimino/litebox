@@ -1,6 +1,6 @@
 import importlib
-from tabulated.sqlite_table import SqliteTable
+from tabulated.sqlite_table import LiteBox
 
 
 if importlib.util.find_spec("pandas"):
-    from tabulated.pandas_table import PandasTable
+    from tabulated.pandas_table import PandasBox

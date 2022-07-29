@@ -48,7 +48,7 @@ def test_perf():
     t_listcomp = time.time() - t0
 
     print(
-        f"Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds."
+        f"LiteBox found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds."
     )
     print(
         f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."

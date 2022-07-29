@@ -12,18 +12,18 @@ from typing import Iterable, Any, List
 PYTYPE_TO_PANDAS = {float: "float64", int: "int64", bool: "bool", str: "O"}
 
 
-class PandasTable:
-    def __init__(self, objs: Optional[Iterable[Any]] = None, on: Dict[str, type] = None, cat_cols: List = None):
+class PandasBox:
+    def __init__(
+        self, objs: Optional[Iterable[Any]] = None, on: Dict[str, type] = None
+    ):
         validate_fields(on)
         self.fields = on
 
         # make empty dataframe
-        self.df = pd.DataFrame(
-            {
-                field: pd.Series(dtype=PYTYPE_TO_PANDAS[dtype])
-                for field, dtype in self.fields.items()
-            }
-        )
+        col_types = dict()
+        for field, dtype in self.fields.items():
+            col_types[field] = pd.Series(dtype=PYTYPE_TO_PANDAS[dtype])
+        self.df = pd.DataFrame(col_types)
         self.df[PYOBJ_ID_COL] = pd.Series(dtype="uint64")
         self.df[PYOBJ_COL] = pd.Series(dtype="O")
         if objs:

@@ -10,11 +10,12 @@ from tabulated.utils import get_field, set_field, validate_fields
 PYTYPE_TO_SQLITE = {float: "NUMBER", int: "NUMBER", str: "TEXT", bool: "NUMBER"}
 
 
-class SqliteTable:
+class LiteBox:
     def __init__(
-        self, objs: Optional[Iterable[Any]] = None,
-            on: Dict[str, type] = None,
-            index: Optional[List[Union[Tuple[str],str]]] = None
+        self,
+        objs: Optional[Iterable[Any]] = None,
+        on: Dict[str, type] = None,
+        index: Optional[List[Union[Tuple, str]]] = None,
     ):
         validate_fields(on)
         self.fields = on
@@ -36,9 +37,9 @@ class SqliteTable:
             self.add_many(objs)
 
         # Deferring creation of indices until after data has been added is much faster.
-        self._create_indices()
+        self._create_indices(index)
 
-    def _create_indices(self, index: Optional[List[Union[Tuple[str],str]]] = None):
+    def _create_indices(self, index: Optional[List[Union[Tuple, str]]] = None):
         """Create indices for the SQLite table"""
         cur = self.conn.cursor()
 
@@ -61,7 +62,7 @@ class SqliteTable:
             # Note that the PYOBJ_ID_COL is indexed by virtue of being the primary key.
 
     def add(self, obj: Any):
-        """Add a single object to the index. Use add_many instead where possible."""
+        """Add a single object to the table. Use add_many instead where possible."""
         ptr = id(obj)
         if ptr in self.obj_map:
             return  # already got it
@@ -76,10 +77,10 @@ class SqliteTable:
         cur.execute(q, values)
 
     def add_many(self, objs: Iterable[any]):
-        """Add a collection of objects to the index."""
+        """Add a collection of objects to the table."""
         obj_ids = [id(obj) for obj in objs]
 
-        # Build a dict first to eliminate repeats in objs. Also skip objs already in the index.
+        # Build a dict first to eliminate repeats in objs. Also skip objs already in the table.
         new_objs = {
             obj_ids[i]: objs[i]
             for i in range(len(obj_ids))
@@ -101,7 +102,7 @@ class SqliteTable:
         self.obj_map.update(new_objs)
 
     def remove(self, obj: Any):
-        """Remove a single object from the index. Fast operation (<1ms usually)."""
+        """Remove a single object from the table. Fast operation (<1ms usually)."""
         ptr = id(obj)
         if ptr not in self.obj_map:
             raise NotInIndexError(f"Could not find object with id: {ptr}")
@@ -111,7 +112,7 @@ class SqliteTable:
         cur.execute(q, (ptr,))
 
     def update(self, obj: Any, updates: Dict[str, Any]):
-        """Update a single object in the index. Fast operation (<1ms usually)."""
+        """Update a single object in the table. Fast operation (<1ms usually)."""
         ptr = id(obj)
         if ptr not in self.obj_map:
             raise NotInIndexError(f"Could not find object with id: {ptr}")
@@ -137,12 +138,12 @@ class SqliteTable:
             return list(self.obj_map.values())
 
         """
-        Optimization: SQLite will often try to use its indexes in scenarios where it shouldn't.
+        Optimization: SQLite will often try to use its indices in scenarios where it shouldn't.
         This results in poor time performance on queries returning a large number of items.
-        Benchmarking says we should cut this off at a bit above sqrt(n_objects).
+        Benchmarking says n_objects^(0.6) is a good max for using the index.
         """
 
-        limit_int = int(len(self.obj_map) ** 0.65)
+        limit_int = int(len(self.obj_map) ** 0.6)
         query = f"SELECT {PYOBJ_ID_COL} FROM {self.table_name} WHERE {where} LIMIT {limit_int}"
         cur = self.conn.cursor()
         cur.execute(query)
