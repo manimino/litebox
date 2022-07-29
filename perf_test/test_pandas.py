@@ -1,13 +1,13 @@
 import random
 import time
 
-from tabulated import Tabulated
+from tabulated import PandasBox
 
 
 def test_pandas():
     random.seed(42)
     data = [{"item": i, "num": random.random()} for i in range(10 ** 6)]
-    ri = Tabulated(data, {"num": float})
+    ri = PandasBox(data, {"num": float})
     t0 = time.time()
     ri_matches = ri.find("num <= 0.001")
     t_tabulated = time.time() - t0

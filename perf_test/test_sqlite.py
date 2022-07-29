@@ -1,6 +1,6 @@
 import random
 import time
-from tabulated import Tabulated
+from tabulated import LiteBox
 
 
 class CatPhoto:
@@ -20,11 +20,10 @@ def test_perf():
 
     # Build Tabulated
     t0 = time.time()
-    ri = Tabulated(
+    ri = LiteBox(
         photos,
         on={"height": int, "width": int, "brightness": float, "name": str},
-        engine="sqlite",
-        table_index=[("width", "height", "brightness")],
+        index=[("width", "height", "brightness")],
     )
     t_build = time.time() - t0
 
