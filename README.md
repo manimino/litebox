@@ -11,8 +11,8 @@ ____
 
 ### Usage
 ```
-from tabulated import Tabulated
-ri = Tabulated(
+from tabulated import SqliteTable
+ri = SqliteTable(
     [{'item': 1, 'size': 1000, 'shape': 'square'}],  # list of objects / dicts 
     {'size': int, 'shape': str})                     # which fields to index on
 ri.find('size >= 1000 and shape == "square"')
@@ -20,13 +20,17 @@ ri.find('size >= 1000 and shape == "square"')
 
 The objects can be any container of `class`, `dataclass`, `namedtuple`, or `dict` objects.
 
-You can `add()`, `add_many()`, `update()`, and `remove()` items from a Tabulated.
+There are two classes available.
+ - SqliteTable: Good when fetching a few objects (< 10% of your dataset)
+ - PandasTable: Good when fetching many objects (>= 10% of your objects)
+
+You can `add()`, `add_many()`, `update()`, and `remove()` items from a SqliteTable or PandasTable.
 
 ____
 
 ### How it works
 
-When you do: `Tabulated(list_of_objects, on={'size': int, 'brightness': float})`
+When you do: `SqliteTable(list_of_objects, on={'size': int, 'brightness': float})` or `PandasTable(...)`
 
 A table is created with 3 columns:
  - size
@@ -37,16 +41,15 @@ On `find()`, a query will run to find the matching objects.
 
 ____
 
-## Methods
+## SQLiteTable API
 
 ### Init
 
 ```
-Tabulated(
+SqliteTable(
         objs: Optional[Iterable[Any]] = None,
         on: Optional[Dict[str, Any]] = None,
-        engine: str = SQLITE,
-        **kwargs
+        index: Optional[List[ Union[Tuple[str], str]]] = None
 )
 ```
 
