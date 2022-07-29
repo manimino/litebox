@@ -1,6 +1,12 @@
+"""
+You have a million cat photos. Find big, bright pictures of Tiger the Cat.
+
+LiteBox outperforms a list comprehension by about 20x in this case (60ms vs 3ms).
+"""
+
 import random
 import time
-from tabulated import Tabulated
+from tabulated import LiteBox
 
 
 class CatPhoto:
@@ -17,20 +23,19 @@ random.seed(42)
 # Make a million
 photos = [CatPhoto() for _ in range(10 ** 6)]
 
-# Build Tabulated
+# Build LiteBox
 
 t0 = time.time()
-ri = Tabulated(
+tb = LiteBox(
     photos,
     on={"height": int, "width": int, "brightness": float, "name": str},
-    engine="sqlite",
-    table_index=[("width", "height", "brightness")],
+    index=[("width", "height", "brightness")],
 )
 t_build = time.time() - t0
 
-# Find Tabulated matches
+# Find LiteBox matches
 t0 = time.time()
-ri_matches = ri.find(
+tb_matches = tb.find(
     "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
 )
 t_tabulated = time.time() - t0
@@ -49,7 +54,7 @@ lc_matches = [
 t_listcomp = time.time() - t0
 print(t_listcomp)
 
-print(f"Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds.")
+print(f"Tabulated found {len(tb_matches)} matches in {round(t_tabulated, 6)} seconds.")
 print(
     f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
 )

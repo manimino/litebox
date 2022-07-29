@@ -1,29 +1,33 @@
-from typing import *
+from typing import Dict, Any, List, Optional
 
 import numpy as np
 import pandas as pd
 
-from tabulated.constants import *
+from tabulated.constants import PYOBJ_COL, PYOBJ_ID_COL
 from tabulated.exceptions import NotInIndexError
-from tabulated.utils import get_field, set_field
+from tabulated.utils import get_field, set_field, validate_fields
+from typing import Iterable, Any, List
 
 
 PYTYPE_TO_PANDAS = {float: "float64", int: "int64", bool: "bool", str: "O"}
 
 
-class PandasIndex:
-    def __init__(self, on: Dict[str, type], **kwargs):
+class PandasBox:
+    def __init__(
+        self, objs: Optional[Iterable[Any]] = None, on: Dict[str, type] = None
+    ):
+        validate_fields(on)
         self.fields = on
 
         # make empty dataframe
-        self.df = pd.DataFrame(
-            {
-                field: pd.Series(dtype=PYTYPE_TO_PANDAS[dtype])
-                for field, dtype in self.fields.items()
-            }
-        )
+        col_types = dict()
+        for field, dtype in self.fields.items():
+            col_types[field] = pd.Series(dtype=PYTYPE_TO_PANDAS[dtype])
+        self.df = pd.DataFrame(columns=col_types)
         self.df[PYOBJ_ID_COL] = pd.Series(dtype="uint64")
         self.df[PYOBJ_COL] = pd.Series(dtype="O")
+        if objs:
+            self.add_many(objs)
 
     def add(self, obj: Any):
         """Add a single object to the index. Use add_many instead where possible."""

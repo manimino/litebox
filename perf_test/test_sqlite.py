@@ -1,6 +1,6 @@
 import random
 import time
-from tabulated import Tabulated
+from tabulated import LiteBox
 
 
 class CatPhoto:
@@ -12,7 +12,7 @@ class CatPhoto:
         self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
 
 
-def test_perf():
+def test_sqlite():
     random.seed(42)
 
     # Make a million
@@ -20,11 +20,10 @@ def test_perf():
 
     # Build Tabulated
     t0 = time.time()
-    ri = Tabulated(
+    ri = LiteBox(
         photos,
         on={"height": int, "width": int, "brightness": float, "name": str},
-        engine="sqlite",
-        table_index=[("width", "height", "brightness")],
+        index=[("width", "height", "brightness")],
     )
     t_build = time.time() - t0
 
@@ -48,7 +47,7 @@ def test_perf():
     t_listcomp = time.time() - t0
 
     print(
-        f"Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds."
+        f"LiteBox found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds."
     )
     print(
         f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
@@ -60,3 +59,6 @@ def test_perf():
         t_listcomp < 1
     )  # normally ~50ms. If it's over 1s, the timings are off in general.
     assert t_build < 10  # normally builds in
+
+if __name__ == '__main__':
+    test_sqlite()
