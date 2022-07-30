@@ -1,11 +1,11 @@
 # LiteBox
 
-[![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
-[![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
-
-Containers for finding Python objects by attribute. Backed by SQLite.
+Container for finding Python objects by attribute using SQLite.
 
 `pip install litebox`
+
+[![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
+[![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
 
 ____
 

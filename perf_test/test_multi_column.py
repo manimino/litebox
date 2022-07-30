@@ -12,7 +12,7 @@ class CatPhoto:
         self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
 
 
-def test_sqlite():
+def test_multi_column():
     random.seed(42)
 
     # Make a million
@@ -60,4 +60,4 @@ def test_sqlite():
 
 
 if __name__ == '__main__':
-    test_sqlite()
+    test_multi_column()
