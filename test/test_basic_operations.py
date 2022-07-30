@@ -2,6 +2,9 @@ import random
 
 from collections import namedtuple
 from dataclasses import dataclass
+
+import pytest
+
 from litebox.main import LiteBox
 
 
@@ -165,3 +168,16 @@ def test_callable():
     data = [{'a': [1, 2, 3]}]
     lb = LiteBox(data, on={get_a1: int})
     assert len(lb.find("get_a1 == 2")) == 1
+
+
+@pytest.mark.parametrize('index', [
+    [('a', 'b')],  # multicolumn
+    [],            # no index
+    ['a'],         # one index
+    ['a', 'b'],    # index on each
+    None           # implements an index on each
+])
+def test_index_types(index):
+    data = [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
+    lb = LiteBox(data, {'a': int, 'b': int}, index=index)
+    assert lb.find("a == 1 and b == 2") == [data[0]]

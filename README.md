@@ -6,6 +6,7 @@ Container for finding Python objects by attribute using SQLite.
 
 [![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
 [![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
+[![Coverage - 100%](https://img.shields.io/static/v1?label=Coverage&message=100%&color=2ea44f)](test/cov.txt)
 
 ____
 
@@ -54,10 +55,10 @@ A SQLite table is created with 3 columns:
 
 On `find()`, a query will run to find the matching objects.
 
-Only the relevant attributes of the object are copied into the table. The rest of the object remains in memory.
+Only the relevant attributes of the object are copied into the table. The rest of the object is not.
 
 An ideal use case is when you have "heavy" objects containing images / audio / large texts, plus some small
-metadata fields that you want to find by. Just make a LiteBox on the metadata, and use it to find
+metadata fields that you want to find by. Make a LiteBox on the metadata, and use it to find
 the object without needing to serialize / deserialize the heavy stuff.
 
 LiteBox is especially good when finding by `<` and `>`. If you only need `==`, consider 

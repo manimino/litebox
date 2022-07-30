@@ -26,12 +26,12 @@ def validate_fields(fields: Dict[Union[str, Callable], type]):
         raise InvalidFields("Need a nonempty dict of fields, such as {'x': float}")
     for i, f in enumerate(fields):
         if fields[f] not in [int, float, bool, str]:
-            raise TypeError(
+            raise InvalidFields(
                 "Expected int, float, bool, or str field type at position {}, but got {}".format(
                     i, fields[f]
                 )
             )
         if not isinstance(f, str) and not callable(f):
-            raise TypeError(
+            raise InvalidFields(
                 "Field name must be a str or function, got {} at position {}".format(f, i)
             )
