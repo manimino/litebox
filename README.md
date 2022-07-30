@@ -7,6 +7,8 @@ Container for finding Python objects by attribute using SQLite.
 [![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
 [![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
 [![Coverage - 100%](https://img.shields.io/static/v1?label=Coverage&message=100%&color=2ea44f)](test/cov.txt)
+[![license - MIT](https://img.shields.io/static/v1?label=license&message=MIT&color=2ea44f)](/LICENSE)
+![python - 3.7+](https://img.shields.io/static/v1?label=python&message=3.7%2B&color=2ea44f)
 
 ____
 
