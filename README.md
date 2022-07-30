@@ -141,4 +141,7 @@ ____
 
 ## Performance
 
-See [examples](/examples) for performance tests.
+LiteBox can be tremendously faster (>100x) than linear-time methods such as Python list comprehension. Speedup depends 
+primarily on number of objects returned; fewer is faster.
+
+See performance tests in [examples](/examples).
