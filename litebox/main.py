@@ -24,14 +24,14 @@ class LiteBox:
         self.conn = sqlite3.connect(":memory:")
 
         # create sqlite table
-        tbl = [f"CREATE TABLE {self.table_name} ("]
+        lbl = [f"CREATE TABLE {self.table_name} ("]
         for field, pytype in self.fields.items():
             s_type = PYTYPE_TO_SQLITE[pytype]
-            tbl.append(f"{get_field_name(field)} {s_type},")
-        tbl.append(f"{PYOBJ_ID_COL} INTEGER PRIMARY KEY")
-        tbl.append(")")
+            lbl.append(f"{get_field_name(field)} {s_type},")
+        lbl.append(f"{PYOBJ_ID_COL} INTEGER PRIMARY KEY")
+        lbl.append(")")
         cur = self.conn.cursor()
-        cur.execute("\n".join(tbl))
+        cur.execute("\n".join(lbl))
 
         if objs is not None:
             self.add_many(objs)

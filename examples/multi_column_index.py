@@ -1,3 +1,9 @@
+"""
+You have a million cat photos. Find big, bright pictures of Tiger the Cat.
+
+LiteBox outperforms a list comprehension by about 20x in this case (60ms vs 3ms).
+"""
+
 import random
 import time
 from litebox import LiteBox
@@ -12,15 +18,16 @@ class CatPhoto:
         self.image_data = "Y2Ugbidlc3QgcGFzIHVuZSBjaGF0dGU="
 
 
-def test_multi_column():
+def main():
     random.seed(42)
 
     # Make a million
     photos = [CatPhoto() for _ in range(10 ** 6)]
 
     # Build LiteBox
+
     t0 = time.time()
-    ri = LiteBox(
+    lb = LiteBox(
         photos,
         on={"height": int, "width": int, "brightness": float, "name": str},
         index=[("width", "height", "brightness")],
@@ -29,10 +36,11 @@ def test_multi_column():
 
     # Find LiteBox matches
     t0 = time.time()
-    ri_matches = ri.find(
+    lb_matches = lb.find(
         "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
     )
     t_litebox = time.time() - t0
+    print(t_litebox)
 
     # Find list comprehension matches
     t0 = time.time()
@@ -45,19 +53,14 @@ def test_multi_column():
         and p.brightness >= 9.0
     ]
     t_listcomp = time.time() - t0
+    print(t_listcomp)
 
-    print(
-        f"LiteBox found {len(ri_matches)} matches in {round(t_litebox, 6)} seconds."
-    )
+    print(f"LiteBox found {len(lb_matches)} matches in {round(t_litebox, 6)} seconds.")
     print(
         f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
     )
-    assert len(ri_matches) == len(lc_matches)
-    assert len(ri_matches) > 0
-    assert (t_listcomp / t_litebox) > 10  # at least a 10x speedup
-    assert t_listcomp < 1  # normally ~50ms. If it's over 1s, the timings are off in general.
-    assert t_build < 10  # normally builds in ~1s
+    print(f"Speedup: {round(t_listcomp / t_litebox)}x")
 
 
 if __name__ == '__main__':
-    test_multi_column()
+    main()

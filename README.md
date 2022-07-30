@@ -1,30 +1,30 @@
 # LiteBox
 
-[![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
-[![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
-
-Containers for finding Python objects by attribute. Backed by SQLite.
+Container for finding Python objects by attribute using SQLite.
 
 `pip install litebox`
+
+[![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
+[![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
 
 ____
 
 ### Usage
 ```
 from litebox import LiteBox
-tb = LiteBox(
+lb = LiteBox(
     [{'num': 1, 'size': 1000, 'shape': 'square'}],   # provide a collection of objects or dicts 
     {'size': int, 'shape': str})                     # specify attributes to store
-tb.find('size >= 1000 and shape == "square"')        # find by attribute value
+lb.find('size >= 1000 and shape == "square"')        # find by attribute value
 ```
 
 The objects can be anything - `class`, `dataclass`, `namedtuple`, `dict`, `string`, `int`, etc.
 
-LiteBox supports `add()`, `add_many()`, `update()`, and `remove()`; see API below.
+LiteBox supports `add()`, `add_many()`, `update()`, and `remove()`.
 
-### Nested attributes
+#### Nested attributes
 
-You can define a function to access nested or derived attributes.
+Define a function to access nested or derived attributes.
 
 ```
 from litebox import LiteBox
@@ -37,16 +37,15 @@ objs = [
 def nested_attr(obj):
     return obj['nested']['a']
 
-# Build LiteBox, run find
-tb = LiteBox(objs, {nested_attr: int})
-tb.find('nested_attr == 2')  # returns obj 1
+lb = LiteBox(objs, {nested_attr: int})
+lb.find('nested_attr == 2')  # returns obj 1
 ```
 
 ____
 
 ### How it works
 
-When you do: `LiteBox(list_of_objects, on={'size': int, 'shape': string})` or `PandasBox(...)`
+When you do: `LiteBox(list_of_objects, on={'size': int, 'shape': string})`
 
 A SQLite table is created with 3 columns:
  - size
@@ -97,8 +96,8 @@ See [SQLite index documentation](https://www.sqlite.org/queryplanner.html) for m
 `find(where: Optional[str]) -> List` finds objects matching the query string in `where`.
 
 Examples: 
- - `tb.find('b == True and string == "okay"')`
- - `tb.find('(x == 0 and y >= 1000.0) or x == 9')`
+ - `lb.find('b == True and string == "okay"')`
+ - `lb.find('(x == 0 and y >= 1000.0) or x == 9')`
  - `lb.find('x is null')`
 
 If `where` is unspecified, all objects in the container are returned. 
@@ -134,12 +133,15 @@ change.
 ### Container methods
 
 You can do the usual container things:
- - Length: `len(tb)`
- - Contains: `obj in tb`
- - Iteration: `for obj in tb: ...`
+ - Length: `len(lb)`
+ - Contains: `obj in lb`
+ - Iteration: `for obj in lb: ...`
 
 ____
 
 ## Performance
 
-See [examples](/examples) for performance tests.
+LiteBox can be tremendously faster (>100x) than linear-time methods such as Python list comprehension. Speedup depends 
+primarily on number of objects returned; fewer is faster.
+
+See performance tests in [examples](/examples).
