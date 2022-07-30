@@ -120,7 +120,7 @@ If an added object is missing an attribute, the object will still be added. The 
 
 ### update()
 
-`update(self, obj: Any)` updates attributes of a single object in the index. 
+`update(self, obj: Any)` updates all stored attributes of a single object. 
 It's just a shorthand for `remove()` and then `add()`.
 
 If you change an object's attributes without calling `update()`, the LiteBox will be out of sync and
