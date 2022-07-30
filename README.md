@@ -1,30 +1,46 @@
-# Tabulated
+# LiteBox
 
-[![tests Actions Status](https://github.com/manimino/tabulated/workflows/tests/badge.svg)](https://github.com/manimino/tabulated/actions)
-[![performance Actions Status](https://github.com/manimino/tabulated/workflows/performance/badge.svg)](https://github.com/manimino/tabulated/actions)
+[![tests Actions Status](https://github.com/manimino/litebox/workflows/tests/badge.svg)](https://github.com/manimino/litebox/actions)
+[![performance Actions Status](https://github.com/manimino/litebox/workflows/performance/badge.svg)](https://github.com/manimino/litebox/actions)
 
-Containers for finding Python objects by attribute. Backed by SQLite and Pandas.
+Containers for finding Python objects by attribute. Backed by SQLite.
 
-`pip install tabulated`
+`pip install litebox`
 
 ____
 
 ### Usage
 ```
-from tabulated import LiteBox
+from litebox import LiteBox
 tb = LiteBox(
-    [{'item': 1, 'size': 1000, 'shape': 'square'}],  # provide a list of objects or dicts 
+    [{'num': 1, 'size': 1000, 'shape': 'square'}],   # provide a collection of objects or dicts 
     {'size': int, 'shape': str})                     # specify attributes to store
 tb.find('size >= 1000 and shape == "square"')        # find by attribute value
 ```
 
-The objects can be any container of `class`, `dataclass`, `namedtuple`, or `dict` objects.
+The objects can be anything - `class`, `dataclass`, `namedtuple`, `dict`, `string`, `int`, etc.
 
-There are two classes available.
- - `LiteBox`: SQLite-backed container. Faster when finding a few of your objects (< 10%).
- - `PandasBox`: Pandas-backed container. Faster when finding many of your objects (>= 10%). 
+LiteBox supports `add()`, `add_many()`, `update()`, and `remove()`; see API below.
 
-You can `add()`, `add_many()`, `update()`, and `remove()` items from a LiteBox or PandasBox.
+### Nested attributes
+
+You can define a function to access nested or derived attributes.
+
+```
+from litebox import LiteBox
+
+objs = [
+    {'num': 1, 'nested': {'a': 2, 'b': 3}}, 
+    {'num': 2, 'nested': {'a': 4, 'b': 5}}
+]
+
+def nested_attr(obj):
+    return obj['nested']['a']
+
+# Build LiteBox, run find
+tb = LiteBox(objs, {nested_attr: int})
+tb.find('nested_attr == 2')  # returns obj 1
+```
 
 ____
 
@@ -32,7 +48,7 @@ ____
 
 When you do: `LiteBox(list_of_objects, on={'size': int, 'shape': string})` or `PandasBox(...)`
 
-A table or dataframe is created with 3 columns:
+A SQLite table is created with 3 columns:
  - size
  - shape
  - Python object reference
@@ -42,19 +58,17 @@ On `find()`, a query will run to find the matching objects.
 Only the relevant attributes of the object are copied into the table. The rest of the object remains in memory.
 
 An ideal use case is when you have "heavy" objects containing images / audio / large texts, plus some small
-metadata fields that you want to find by. Just make a LiteBox or PandasBox on the metadata, and use it to find
+metadata fields that you want to find by. Just make a LiteBox on the metadata, and use it to find
 the object without needing to serialize / deserialize the heavy stuff.
 
-The `tabulated` containers are especially good when finding by `<` and `>`. If you only need `==`, consider 
-[filtered](https://pypi.org/project/filtered/) -- it is based on dict lookups which are faster in that case. 
+LiteBox is especially good when finding by `<` and `>`. If you only need `==`, consider 
+[HashBox](https://pypi.org/project/hashbox/) -- it is based on dict lookups which are faster in that case. 
 
 ____
 
 ## API
 
-The API is largely the same across LiteBox and PandasBox. The only difference is initialization.
-
-### LiteBox Init 
+### Init 
 
 ```
 LiteBox(
@@ -73,25 +87,10 @@ attribute.
 
 The `index` parameter is the key to getting good performance. A multi-column index can often speed up `find()` 
 operations. `index=[('a', 'b', 'c'), 'd']` will create a multi-column index on `(a, b, c)` and a single-column index 
-on `d`.  Conversely, some columns such as those containing string data may perform better without an index.
+on `d`.  Conversely, some columns such as those containing only a few different values may perform better without an 
+index.
 
 See [SQLite index documentation](https://www.sqlite.org/queryplanner.html) for more insights.
-
-### PandasBox Init
-
-Creates a PandasBox.
-
-```
-PandasBox(
-        objs: Optional[Iterable[Any]] = None,
-        on: Optional[Dict[str, Any]] = None,
-        : Optional[List[ Union[Tuple[str], str]]] = None
-)
-```
-
-## Other API functions
-
-The remaining functions are the same for both PandasBox and LiteBox; exceptions as noted.
 
 ### find()
 
@@ -100,16 +99,11 @@ The remaining functions are the same for both PandasBox and LiteBox; exceptions 
 Examples: 
  - `tb.find('b == True and string == "okay"')`
  - `tb.find('(x == 0 and y >= 1000.0) or x == 9')`
+ - `lb.find('x is null')`
 
 If `where` is unspecified, all objects in the container are returned. 
 
-The syntax of `where` is nearly identical between pandas and sqlite. Exceptions:
- - In sqlite, use `find('x is null')` / `find('x is not null')`. 
- - In pandas, use `find('x != x')` to match nulls, or `find('x == x')` for non-nulls. 
- - Sqlite accepts either `=` or `==` for equality; pandas accepts only `==`.
- 
-Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html) or 
-[pandas queries](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html) as needed.
+Consult the syntax for [SQLite queries](https://www.sqlite.org/lang_select.html) as needed.
 
 ### add(), add_many()
 
@@ -126,23 +120,16 @@ If an added object is missing an attribute, the object will still be added. The 
 
 ### update()
 
-`update(self, obj: Any, updates: Dict[str, Any])` updates attributes of a single object in the index.
+`update(self, obj: Any)` updates attributes of a single object in the index. 
+It's just a shorthand for `remove()` and then `add()`.
 
-`updates` is a dict containing the new values for each changed attribute, e.g. `{'x': 5.5, 'b': True}`.
-
-If you change an indexed object's attributes without calling `update()`, the Tabulated will be out of sync and
-return inaccurate results. 
-
-`update()` will changes both the value in the Tabulated table and the object's value.
-
-Update is fast (less than 1 ms), it's O(log n) in both sqlite and pandas.
+If you change an object's attributes without calling `update()`, the LiteBox will be out of sync and
+return stale results. Consider implementing a `setattr` listener on your object to update LiteBox when your objects
+change.
 
 ### remove()
 
 `remove(self, obj: Any)` removes an object. 
-
-Remove is fast (less than 1ms) in SQLite but slower (tens of ms) in Pandas. 
-This is because removing an item requires rebuilding arrays there.
 
 ### Container methods
 
@@ -155,24 +142,4 @@ ____
 
 ## Performance
 
-|                 | Baseline | SqliteBox  | PandasBox |
-|-----------------|----------|------------|-----------|
-| Find 1 item     | 0.9s     | 0.2ms      | 43.1ms    |
-| Find 10 items   | 0.9s     | 0.7ms      | 44.9ms    |
-| Find 100 items  | 1.0s     | 1.9ms      | 43.8ms    |
-| Find 1K items   | 1.0s     | 6.7ms      | 43.9ms    |
-| Find 10K items  | 1.1s     | 27.2ms     | 47.6ms    |
-| Find 100K items | 1.2s     | 0.18s      | 88.3ms    |
-| Find 1M items   | 1.7s     | 1.37s      | 0.24s     |
-| Find 10M items  | 2.9s     | 10.6s      | 0.45s     |
-
-This is a benchmark on random range queries against a dataset of 10 million (10^7) objects indexed on two numeric 
-fields. `Baseline` is a Python list comprehension.
-
-
-![Benchmark: sqlite does well on small queries, other engines do better on large queries.](notebooks/benchmark.png)
-
-This is the same data as a graph, showing relative speedup. Each line is divided by `baseline`. 
-Note that both axis labels are powers of 10. So `10^3` on the Y-axis indicates a 1000X speedup.
-
-See [examples](/examples) for more performance tests.
+See [examples](/examples) for performance tests.

@@ -6,7 +6,7 @@ LiteBox outperforms a list comprehension by about 20x in this case (60ms vs 3ms)
 
 import random
 import time
-from tabulated import LiteBox
+from litebox import LiteBox
 
 
 class CatPhoto:
@@ -38,8 +38,8 @@ t0 = time.time()
 tb_matches = tb.find(
     "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
 )
-t_tabulated = time.time() - t0
-print(t_tabulated)
+t_litebox = time.time() - t0
+print(t_litebox)
 
 # Find list comprehension matches
 t0 = time.time()
@@ -54,8 +54,8 @@ lc_matches = [
 t_listcomp = time.time() - t0
 print(t_listcomp)
 
-print(f"Tabulated found {len(tb_matches)} matches in {round(t_tabulated, 6)} seconds.")
+print(f"LiteBox found {len(tb_matches)} matches in {round(t_litebox, 6)} seconds.")
 print(
     f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
 )
-print(f"Speedup: {round(t_listcomp / t_tabulated)}x")
+print(f"Speedup: {round(t_listcomp / t_litebox)}x")

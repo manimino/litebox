@@ -2,8 +2,7 @@ import math
 import random
 import string
 import time
-from tabulated import Tabulated
-from tabulated.constants import PANDAS, SQLITE
+from litebox import LiteBox
 
 
 class Thing:
@@ -85,29 +84,25 @@ def num_str(n: int) -> str:
         return str(n)
 
 
-def run_float_benchmark(engine, n=10 ** 5, n_runs=5):
-    results = {"n": num_str(n), "engine": engine}
+def run_float_benchmark(n=10 ** 5, n_runs=5):
+    results = {"n": num_str(n)}
     print("Generating objects")
     things = [Thing() for _ in range(n)]
 
     # build
-    print(f"building {engine} index")
+    print(f"building index")
     t0 = time.time()
-    if engine == SQLITE:
-        ri = Tabulated(
-            things,
-            {"f0": float, "f1": float},
-            engine=engine,
-            table_index=[("f0", "f1")],
-        )
-    else:
-        ri = Tabulated(things, {"f0": float, "f1": float}, engine=engine)
+    ri = LiteBox(
+        things,
+        {"f0": float, "f1": float},
+        index=[("f0", "f1")],
+    )
     t1 = time.time()
-    results[f"build {engine}"] = time_str(t1 - t0)
+    results[f"build"] = time_str(t1 - t0)
 
     exp_max = int(round(math.log10(n)))
     results["baseline"] = dict()
-    results[f"{engine}"] = dict()
+    results[f"litebox"] = dict()
     print("running queries")
     for exp in range(0, exp_max + 1):
         n_items = 10 ** exp
@@ -116,12 +111,12 @@ def run_float_benchmark(engine, n=10 ** 5, n_runs=5):
         matches, t = linear_floats(things, n_items, n_runs)
         results[f"baseline"][num_str(n_items)] = (num_str(matches), time_str(t))
 
-        # do tabulated
+        # do litebox
         query_floats(
             ri, n_items, 2
         )  # warm up caches first to produce steady-state-like performance
         matches, t = query_floats(ri, n_items, 2)
-        results[engine][num_str(n_items)] = (num_str(matches), time_str(t))
+        results["litebox"][num_str(n_items)] = (num_str(matches), time_str(t))
 
     # __contains__
     to_find = [random.choice(things) for _ in range(100)]
@@ -129,7 +124,7 @@ def run_float_benchmark(engine, n=10 ** 5, n_runs=5):
     for t in to_find:
         _ = t in ri
     t1 = time.time()
-    results[engine]["contains"] = time_str((t1 - t0) / len(to_find))
+    results["litebox"]["contains"] = time_str((t1 - t0) / len(to_find))
 
     # update
     to_update = [random.choice(things) for _ in range(100)]
@@ -137,7 +132,7 @@ def run_float_benchmark(engine, n=10 ** 5, n_runs=5):
     for t in to_find:
         ri.update(t, {"f1": 100})
     t1 = time.time()
-    results[engine]["update"] = time_str((t1 - t0) / len(to_update))
+    results["litebox"]["update"] = time_str((t1 - t0) / len(to_update))
 
     # remove
     rm_idxs = list(set(random.choice(range(len(ri))) for _ in range(1000)))[:100]
@@ -146,17 +141,15 @@ def run_float_benchmark(engine, n=10 ** 5, n_runs=5):
     for t in to_rm:
         ri.remove(t)
     t1 = time.time()
-    results[engine]["remove"] = time_str((t1 - t0) / len(to_rm))
+    results["litebox"]["remove"] = time_str((t1 - t0) / len(to_rm))
 
     return results
 
 
 if __name__ == "__main__":
-    results = dict()
-    for engine in PANDAS, SQLITE:
-        results.update(run_float_benchmark(engine, 10 ** 5, n_runs=8))
+    results = run_float_benchmark(10 ** 5, n_runs=8)
     for k, v in results.items():
-        if k in ["baseline", SQLITE, PANDAS]:
+        if k in ["baseline", "litebox"]:
             print(" ", k)
             for ke, ve in v.items():
                 print("   ", ke, ve)
