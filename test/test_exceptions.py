@@ -4,15 +4,15 @@ from litebox.main import LiteBox
 
 
 def test_update_missing_object():
-    tb = LiteBox(on={"x": int})
+    lb = LiteBox(on={"x": int})
     with AssertRaises(NotInIndexError):
-        tb.update(tb)
+        lb.update(lb)
 
 
 def test_remove_missing_object():
-    tb = LiteBox(on={"x": int})
+    lb = LiteBox(on={"x": int})
     with AssertRaises(NotInIndexError):
-        tb.remove(tb)
+        lb.remove(lb)
 
 
 def test_init_without_fields():

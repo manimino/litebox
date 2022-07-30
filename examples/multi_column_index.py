@@ -26,7 +26,7 @@ photos = [CatPhoto() for _ in range(10 ** 6)]
 # Build LiteBox
 
 t0 = time.time()
-tb = LiteBox(
+lb = LiteBox(
     photos,
     on={"height": int, "width": int, "brightness": float, "name": str},
     index=[("width", "height", "brightness")],
@@ -35,7 +35,7 @@ t_build = time.time() - t0
 
 # Find LiteBox matches
 t0 = time.time()
-tb_matches = tb.find(
+lb_matches = lb.find(
     "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
 )
 t_litebox = time.time() - t0
@@ -54,7 +54,7 @@ lc_matches = [
 t_listcomp = time.time() - t0
 print(t_listcomp)
 
-print(f"LiteBox found {len(tb_matches)} matches in {round(t_litebox, 6)} seconds.")
+print(f"LiteBox found {len(lb_matches)} matches in {round(t_litebox, 6)} seconds.")
 print(
     f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
 )
