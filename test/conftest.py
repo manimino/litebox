@@ -1,14 +1,3 @@
-import pytest
-
-from tabulated.sqlite_table import LiteBox
-from tabulated.pandas_table import PandasBox
-
-
-@pytest.fixture(params=[LiteBox, PandasBox])
-def table_class(request):
-    return request.param
-
-
 class AssertRaises:
     """
     While the unittest package has an assertRaises context manager, it is incompatible with pytest + fixtures.

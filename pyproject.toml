@@ -1,19 +1,17 @@
 [tool.poetry]
-name = "tabulated"
+name = "litebox"
 version = "0.2.0"
 description = ""
 authors = ["Theo Walker <theo.ca.walker@gmail.com>"]
-repository = "https://github.com/manimino/tabulated/"
-documentation = "https://pypi.org/project/tabulated/"
+repository = "https://github.com/manimino/litebox/"
+documentation = "https://pypi.org/project/litebox/"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-pandas = {version = ">=1.0", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
-pandas = ">=1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -34,7 +32,7 @@ exclude = '''
     | \.hg
     | \.ipynb_checkpoints
     | \.pytest_cache
-    | \.tabulated.egg-info
+    | \.litebox.egg-info
     | \.venv
     | _build
     | buck-out

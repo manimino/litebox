@@ -1,6 +1,6 @@
 import random
 import time
-from tabulated import Tabulated
+from litebox import LiteBox
 
 
 class CatPhoto:
@@ -17,10 +17,10 @@ random.seed(42)
 # Make a million
 photos = [CatPhoto() for _ in range(10 ** 6)]
 
-# Build Tabulated
+# Build LiteBox
 
 t0 = time.time()
-ri = Tabulated(
+ri = LiteBox(
     photos,
     on={"height": int, "width": int, "brightness": float, "name": str},
     engine="sqlite",
@@ -28,13 +28,13 @@ ri = Tabulated(
 )
 t_build = time.time() - t0
 
-# Find Tabulated matches
+# Find LiteBox matches
 t0 = time.time()
 ri_matches = ri.find(
     "name == 'Tiger' and height >= 1900 and width >= 1900 and brightness >= 9.0"
 )
-t_tabulated = time.time() - t0
-print(t_tabulated)
+t_litebox = time.time() - t0
+print(t_litebox)
 
 # Find list comprehension matches
 t0 = time.time()
@@ -49,8 +49,8 @@ lc_matches = [
 t_listcomp = time.time() - t0
 print(t_listcomp)
 
-print(f"Tabulated found {len(ri_matches)} matches in {round(t_tabulated, 6)} seconds.")
+print(f"LiteBox found {len(ri_matches)} matches in {round(t_litebox, 6)} seconds.")
 print(
     f"List comprehension found {len(lc_matches)} matches in {round(t_listcomp, 6)} seconds."
 )
-print(f"Speedup: {round(t_listcomp / t_tabulated)}x")
+print(f"Speedup: {round(t_listcomp / t_litebox)}x")
