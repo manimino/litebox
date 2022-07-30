@@ -24,10 +24,7 @@ def validate_fields(fields: Dict[Union[str, Callable], type]):
     """Check that fields are correct. Raise exception if not."""
     if not fields or not isinstance(fields, dict):
         raise InvalidFields("Need a nonempty dict of fields, such as {'x': float}")
-    print(fields)
     for i, f in enumerate(fields):
-        print(fields[f] in [int, float, bool, str])
-        print(isinstance(f, str) or callable(f))
         if fields[f] not in [int, float, bool, str]:
             raise InvalidFields(
                 "Expected int, float, bool, or str field type at position {}, but got {}".format(

@@ -94,7 +94,6 @@ def test_remove_many():
         lb.remove(things[i])
     assert len(lb) == 5
     assert all([t not in lb for t in things[:5]])
-    print("expected:", sorted([id(t) for t in things[5:]]))
     assert all([t in lb for t in things[5:]])
 
 
