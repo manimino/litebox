@@ -64,7 +64,7 @@ metadata fields that you want to find by. Make a LiteBox on the metadata, and us
 the object without needing to serialize / deserialize the heavy stuff.
 
 LiteBox is especially good when finding by `<` and `>`. If you only need `==`, consider 
-[HashBox](https://pypi.org/project/hashbox/) -- it is based on dict lookups which are faster in that case. 
+[FilterBox](https://pypi.org/project/filterbox/) -- it is based on dict lookups which are faster in that case. 
 
 ____
 
