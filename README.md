@@ -63,9 +63,6 @@ An ideal use case is when you have "heavy" objects containing images / audio / l
 metadata fields that you want to find by. Make a LiteBox on the metadata, and use it to find
 the object without needing to serialize / deserialize the heavy stuff.
 
-LiteBox is especially good when finding by `<` and `>`. If you only need `==`, consider 
-[FilterBox](https://pypi.org/project/filterbox/) -- it is based on dict lookups which are faster in that case. 
-
 ____
 
 ## API
